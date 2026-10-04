@@ -15,7 +15,7 @@
 
 ### 2. Подготовка к переводу в полноценное веб-приложение (Vite + Vue 3)
 В проекте уже подготовлена модульная архитектура:
-* `package.json` — зависимости и скрипты (`npm run dev`, `npm run build`).
+* `package.json` — зависимости и скрипты (`npm run dev`, `npm run build`, `npm run build:watch`).
 * `vite.config.js` — конфигурация сборщика Vite.
 * `src/App.vue` и `src/main.js` — модульные компоненты на Vue 3.
 * `src/services/storage.js` — изолированный сервис хранения данных.
@@ -25,6 +25,15 @@
 npm install
 npm run dev
 ```
+
+### 3. Автобилд (CI/CD & Watch Mode)
+* **Автобилд и деплой на GitHub Pages (`.github/workflows/deploy.yml`)**:
+  При каждом `git push` в ветку `main` с изменениями фронтенда автоматически запускается GitHub Actions, который собирает Vue 3 проект (`npm ci && npm run build`) и выкатывает готовый бандл из `dist/` на **books.vantuzfed.ru**.
+* **Локальный автобилд (watch-режим)**:
+  ```bash
+  npm run build:watch   # или npm run watch
+  ```
+  Vite непрерывно отслеживает файлы в `src/`, `public/` и автоматически пересобирает `dist/` при любых сохранениях.
 
 ---
 

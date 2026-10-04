@@ -1,0 +1,19 @@
+{
+  "name": "bookshelf-app",
+  "version": "1.0.0",
+  "description": "Книжная полка — список литературы с поддержкой тем (Светлая, Тёмная, S.T.A.L.K.E.R. КПК) и локальным хранилищем",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.1.6"
+  }
+}

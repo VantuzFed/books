@@ -1,971 +1,2207 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Книжная полка — список книг</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script>
+  (function() {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var t = p.get('theme') || localStorage.getItem('bookshelf_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+      var b = p.get('bg') || localStorage.getItem('bookshelf_stalker_bg') || 'menu';
+      document.documentElement.setAttribute('data-stalker-bg', b);
+    } catch(e) {}
+  })();
+</script>
 <style>
-:root{
-  --bg:#f6f7f9;
-  --card:#ffffff;
-  --border:#e6e8eb;
-  --text:#111827;
-  --muted:#6b7280;
-  --accent:#111827;
-  --accent2:#f59e0b;
-  --blue:#2563eb;
-  --green:#059669;
-  --orange:#d97706;
-  --violet:#7c3aed;
-  --radius:14px;
+/* ==================== ТЕМЫ ОФОРМЛЕНИЯ ==================== */
+:root, [data-theme="light"] {
+  --bg: #f6f7f9;
+  --bg-pattern: none;
+  --card: #ffffff;
+  --card-hover: #ffffff;
+  --border: #e2e8f0;
+  --border-focus: #111827;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --accent: #111827;
+  --accent-hover: #1f2937;
+  --accent-text: #ffffff;
+  --badge-bg: #f8fafc;
+  --badge-border: #e2e8f0;
+  --input-bg: #ffffff;
+  --table-head: #f8fafc;
+  --table-hover: #f1f5f9;
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  --shadow-hover: 0 10px 24px rgba(15, 23, 42, 0.1);
+  --blue: #2563eb;
+  --green: #059669;
+  --orange: #d97706;
+  --violet: #7c3aed;
+  --red: #dc2626;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font-main: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-display: Merriweather, Georgia, serif;
+  --font-tech: ui-monospace, Menlo, monospace;
 }
+
+[data-theme="dark"] {
+  --bg: #0b0f19;
+  --bg-pattern: none;
+  --card: #151d2e;
+  --card-hover: #1a2438;
+  --border: #233149;
+  --border-focus: #3b82f6;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-text: #ffffff;
+  --badge-bg: #1c273c;
+  --badge-border: #2d3e5b;
+  --input-bg: #0f1728;
+  --table-head: #101726;
+  --table-hover: #182236;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.6);
+  --blue: #38bdf8;
+  --green: #34d399;
+  --orange: #fbbf24;
+  --violet: #a78bfa;
+  --red: #f87171;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font-main: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-display: Merriweather, Georgia, serif;
+  --font-tech: ui-monospace, Menlo, monospace;
+}
+
+/* S.T.A.L.K.E.R. Главное Меню & КПК — оригинальные текстуры из игры */
+[data-theme="stalker"] {
+  --bg: #0d0f11;
+  --bg-pattern: none;
+  --card: rgba(20, 24, 27, 0.95);
+  --card-hover: rgba(27, 32, 36, 0.98);
+  --border: #3c444a;
+  --border-focus: #f59e0b;
+  --text: #f0f2eb;
+  --text-muted: #9aa299;
+  --accent: #e59324;
+  --accent-hover: #ffaa33;
+  --accent-text: #0e1113;
+  --badge-bg: rgba(16, 20, 22, 0.95);
+  --badge-border: #3e464c;
+  --input-bg: #0e1113;
+  --table-head: rgba(22, 27, 30, 0.98);
+  --table-hover: rgba(35, 42, 46, 0.9);
+  --shadow: inset 0 0 16px rgba(0, 0, 0, 0.8), 0 4px 18px rgba(0, 0, 0, 0.9);
+  --shadow-hover: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 16px rgba(229, 147, 36, 0.4);
+  --blue: #38bdf8;
+  --green: #8bc34a;
+  --orange: #ffb300;
+  --violet: #f472b6;
+  --red: #ef5350;
+  --radius: 2px;
+  --radius-sm: 2px;
+  --font-main: 'Share Tech Mono', 'Courier New', Consolas, monospace;
+  --font-display: 'Share Tech Mono', 'Courier New', Consolas, monospace;
+  --font-tech: 'Share Tech Mono', 'Courier New', Consolas, monospace;
+}
+
+/* Базовые стили */
 *{box-sizing:border-box;min-width:0}
 html{overflow-x:hidden;max-width:100vw}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;overflow-x:hidden;max-width:100vw}
+body{
+  margin:0;
+  background-color:var(--bg);
+  background-image:var(--bg-pattern);
+  color:var(--text);
+  font-family:var(--font-main);
+  line-height:1.5;
+  overflow-x:hidden;
+  max-width:100vw;
+  transition:background-color .2s ease, color .2s ease;
+}
 img,svg{max-width:100%}
 a{color:var(--blue);text-decoration:none}
 a:hover{text-decoration:underline}
-.container{max-width:1280px;margin:0 auto;padding:20px 16px 40px;overflow-x:hidden;max-width:100vw}
-@media(max-width:760px){.container{padding:12px 12px 24px}}
-.header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+
+/* Фон оригинального главного меню игры */
+html[data-theme="stalker"],
+html[data-theme="stalker"] body,
+[data-theme="stalker"] {
+  background-color: #0c0f0a;
+  background-image:
+    linear-gradient(rgba(10, 13, 9, 0.74), rgba(6, 8, 5, 0.88)),
+    url('./stalker/bg_menu.webp');
+  background-attachment: fixed;
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+html[data-theme="stalker"][data-stalker-bg="tractor"],
+html[data-theme="stalker"][data-stalker-bg="tractor"] body,
+[data-theme="stalker"][data-stalker-bg="tractor"] {
+  background-image:
+    linear-gradient(rgba(10, 13, 9, 0.74), rgba(6, 8, 5, 0.88)),
+    url('./stalker/bg_tractor.webp');
+}
+
+html[data-theme="stalker"][data-stalker-bg="barrel"],
+html[data-theme="stalker"][data-stalker-bg="barrel"] body,
+[data-theme="stalker"][data-stalker-bg="barrel"] {
+  background-image:
+    linear-gradient(rgba(10, 13, 9, 0.74), rgba(6, 8, 5, 0.88)),
+    url('./stalker/bg_barrel.webp');
+}
+
+/* Аутентичный курсор с вращающимся знаком радиации */
+html[data-theme="stalker"],
+html[data-theme="stalker"] body,
+[data-theme="stalker"],
+[data-theme="stalker"] * {
+  cursor: url('./stalker/cursor.png') 0 0, auto !important;
+}
+[data-theme="stalker"] button,
+[data-theme="stalker"] a,
+[data-theme="stalker"] select,
+[data-theme="stalker"] input,
+[data-theme="stalker"] .btn,
+[data-theme="stalker"] .cover,
+[data-theme="stalker"] .filter-btn,
+[data-theme="stalker"] .theme-btn,
+[data-theme="stalker"] .view-switch button,
+[data-theme="stalker"] .status-option,
+[data-theme="stalker"] .icon-btn {
+  cursor: url('./stalker/cursor.png') 0 0, pointer !important;
+}
+
+/* Мягкая виньетка по самым краям без сканлайнов (для идеальной четкости текста) */
+[data-theme="stalker"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 70%, rgba(0, 0, 0, 0.55) 100%);
+  z-index: 999;
+}
+
+.container{max-width:1300px;margin:0 auto;padding:18px 16px 40px;overflow-x:hidden}
+@media(max-width:760px){.container{padding:12px 12px 30px}}
+
+/* Шапка */
+.header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
 .brand{display:flex;gap:12px;align-items:center}
-.logo{width:40px;height:40px;border-radius:10px;background:#111827;color:#fff;display:grid;place-items:center}
-.logo svg{width:20px;height:20px;display:block}
-.brand h1{margin:0;font-family:Merriweather,serif;font-size:22px;letter-spacing:-.02em}
-.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
-.header-actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn{appearance:none;border:1px solid var(--border);background:#fff;color:var(--text);padding:9px 14px;border-radius:10px;font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.15s}
-.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.logo{
+  width:42px;height:42px;border-radius:var(--radius);
+  background:var(--accent);color:var(--accent-text);
+  display:grid;place-items:center;flex-shrink:0;
+  box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+.logo svg{width:22px;height:22px;display:block}
+
+[data-theme="stalker"] .header {
+  padding: 12px 16px;
+  background: rgba(18, 22, 24, 0.96) url('./stalker/frame_metal_tile.png');
+  border: 1px solid #3c444a;
+  border-bottom: 2px solid #e59324;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+  border-radius: 2px;
+  position: relative;
+}
+[data-theme="stalker"] .header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: url('./stalker/top_bar_hud.png') repeat-x center top;
+  opacity: 0.9;
+}
+[data-theme="stalker"] .logo {
+  border: 2px solid #e59324;
+  background: #14171a url('./stalker/skull.png') center / 75% no-repeat !important;
+  box-shadow: 0 0 14px rgba(229, 147, 36, 0.5) !important;
+}
+[data-theme="stalker"] .logo svg {
+  display: none !important;
+}
+.brand h1{
+  margin:0;font-family:var(--font-display);
+  font-size:22px;letter-spacing:-.02em;line-height:1.2;
+}
+[data-theme="stalker"] .brand h1{
+  letter-spacing:.08em;
+  color:#ff9800;
+  text-shadow: 0 0 8px rgba(229, 147, 36, 0.6), 0 2px 4px #000;
+  text-transform: uppercase;
+}
+.brand p{margin:2px 0 0;color:var(--text-muted);font-size:12.5px}
+[data-theme="stalker"] .brand p{
+  color: #9aa299;
+  font-family: var(--font-tech);
+  letter-spacing: 0.06em;
+}
+
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Переключатель тем */
+.theme-switch{
+  display:inline-flex;align-items:center;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:3px;gap:2px;
+}
+.theme-btn{
+  background:none;border:none;color:var(--text-muted);
+  padding:6px 9px;border-radius:calc(var(--radius) - 3px);
+  cursor:pointer;font-size:13px;font-family:inherit;
+  display:inline-flex;align-items:center;gap:6px;transition:.15s;
+}
+.theme-btn.active{
+  background:var(--accent);color:var(--accent-text);
+  font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.theme-btn svg{width:15px;height:15px}
+
+/* Переключатель фонов Сталкера */
+.stalker-bg-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(16, 20, 22, 0.95);
+  border: 1px solid #3c444a;
+  border-radius: 2px;
+  padding: 2px 6px;
+  font-family: var(--font-tech);
+  font-size: 11.5px;
+}
+.stalker-bg-label {
+  color: #e59324;
+  font-weight: 700;
+  margin-right: 2px;
+  text-transform: uppercase;
+}
+.stalker-bg-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #9aa299;
+  padding: 3px 6px;
+  font-family: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: 0.15s;
+}
+.stalker-bg-btn:hover {
+  color: #ffaa33;
+  border-color: #556068;
+}
+.stalker-bg-btn.active {
+  background: url('./stalker/btn_sm_h.png') center / 100% 100% no-repeat !important;
+  color: #ff9800 !important;
+  border-color: #e59324 !important;
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(229, 147, 36, 0.5);
+}
+
+/* Кнопки */
+.btn{
+  appearance:none;border:1px solid var(--border);
+  background:var(--card);color:var(--text);
+  padding:8px 14px;border-radius:var(--radius-sm);
+  font-weight:500;font-size:13.5px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:inherit;transition:.15s;white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-hover);border-color:var(--border-focus)}
 .btn:active{transform:none}
-.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn-primary:hover{background:#1f2937}
-.btn-ghost{background:#fff}
-.btn-sm{padding:7px 10px;font-size:13px;border-radius:8px}
-.stats-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px 14px;margin-bottom:16px;font-size:13px;line-height:1}
-.stats-bar b{font-weight:700}
-.stats-main{white-space:nowrap}
-.stats-details{white-space:nowrap;display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap}
-.stats-details b{font-weight:700}
-.stats-toggle{margin-left:auto;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:999px;white-space:nowrap}
-.stats-toggle:hover{color:var(--text);background:#f3f4f6}
-@media(max-width:760px){.stats-bar{border-radius:14px;padding:10px 12px;gap:8px}}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
-.stat small{color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
-.stat b{font-size:22px;line-height:1}
-.stat span{font-size:12px;color:var(--muted)}
-.layout{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
-@media(max-width:920px){.layout{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(17,24,39,.04)}
-.card-header{padding:16px 16px 0;font-weight:600;display:flex;align-items:center;justify-content:space-between}
-.card-body{padding:16px}
-.form{display:flex;flex-direction:column;gap:12px}
-label{font-size:13px;font-weight:500;color:#374151;display:flex;flex-direction:column;gap:6px}
-input,select,textarea{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;background:#fff;outline:none;transition:.15s;font-family:inherit}
-input:focus,select:focus,textarea:focus{border-color:#111827;box-shadow:0 0 0 3px rgba(17,24,39,.08)}
-textarea{resize:vertical;min-height:72px}
-.hint{font-size:12px;color:var(--muted)}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.status-chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border);cursor:pointer;background:#fff}
-.chip.active{background:#111827;color:#fff;border-color:#111827}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
-.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.toolbar-right{color:var(--muted);font-size:13px}
-.search{position:relative}
-.search input{padding-left:36px;min-width:260px;width:100%}
-.search span{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
-.filters{display:flex;gap:6px;flex-wrap:wrap}
-.filters button{padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:13px;cursor:pointer}
-.filters button.active{background:#111827;color:#fff;border-color:#111827}
-.sort{border:1px solid var(--border);border-radius:999px;padding:7px 12px;background:#fff;font-size:13px}
-.table-wrap{overflow:visible;border-radius:var(--radius);border:1px solid var(--border);background:var(--card)}
-table{width:100%;border-collapse:collapse;min-width:0;table-layout:fixed}
-thead th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:11px 12px;background:#f9fafb;border-bottom:1px solid var(--border);white-space:nowrap}
-tbody td{padding:12px 12px;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:middle}
-tbody td:nth-child(4){white-space:nowrap}
-tbody tr:last-child td{border-bottom:none}
-tbody tr:hover{background:#f9fafb}
-.author{font-weight:600}
-.title{font-weight:500}
-.grid-desc{font-size:12px;color:#4b5563;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-.grid-characters{font-size:11.5px;color:#374151;display:flex;align-items:center;gap:5px;line-height:1.3}
-.grid-characters svg{width:13px;height:13px;flex:0 0 13px;color:#9ca3af}
-.grid-characters span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.desc-cell{font-size:12.5px;color:#4b5563;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-.characters-cell{font-size:12px;color:#374151;display:flex;align-items:center;gap:5px;line-height:1.35}
-.characters-cell svg{width:13px;height:13px;flex:0 0 13px;color:#9ca3af}
-.characters-cell span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card-desc{font-size:13px;color:#4b5563;line-height:1.4;word-break:break-word}
-.card-characters{font-size:12.5px;color:#374151;display:flex;align-items:center;gap:6px;line-height:1.35}
-.card-characters svg{width:13px;height:13px;flex:0 0 13px;color:#9ca3af}
-.link{font-size:13px;display:inline-flex;align-items:center;gap:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.author,.title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-tbody td{word-break:break-word}
-.badge{padding:5px 9px;border-radius:999px;font-size:11.5px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#111827;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;line-height:1}
-.badge svg{width:14px;height:14px;flex:0 0 14px;display:block}
-.badge-read svg,.badge-reading svg,.badge-planned svg,.badge-dropped svg{stroke:currentColor}
-.badge-read{color:#111827}
-.badge-reading{color:#111827}
-.badge-planned{color:#111827}
-.badge-dropped{color:#6b7280}
-.filters button{display:inline-flex;align-items:center;gap:8px}
-.filters button .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px;display:inline-block}
-.filters button .dot-planned{background:var(--orange)}
-.filters button .dot-reading{background:var(--blue)}
-.filters button .dot-read{background:var(--green)}
-.filters button .dot-dropped{background:var(--violet)}
-.actions{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;min-width:0}
-.icon-btn{width:32px;height:32px;flex:0 0 32px;border-radius:8px;border:1px solid var(--border);background:#fff;display:grid;place-items:center;cursor:pointer}
-tbody td:last-child{padding-right:10px}
-.status-select{position:relative;flex:0 0 auto}
-.status-trigger{width:36px;height:36px;display:grid;place-items:center;padding:0;border:1px solid var(--border);border-radius:9px;background:#fff;cursor:pointer;line-height:1;transition:.15s}
-.status-trigger:hover{border-color:#111827;transform:translateY(-1px);box-shadow:0 4px 12px rgba(17,24,39,.08)}
-.status-trigger svg{width:16px;height:16px;display:block}
-.status-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:auto;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 28px rgba(17,24,39,.14);padding:6px;z-index:30;display:none;gap:6px}
-.status-menu.open{display:flex}
-.status-option{width:40px;height:40px;display:grid;place-items:center;padding:0;border-radius:9px;border:1px solid transparent;background:#fff;cursor:pointer;color:var(--text);transition:.15s}
-.status-option:hover{background:#f3f4f6;border-color:var(--border);transform:translateY(-1px)}
-.status-option.is-active{background:#111827;color:#fff;border-color:#111827;box-shadow:0 4px 12px rgba(17,24,39,.18)}
-.status-option svg{width:18px;height:18px;display:block;stroke:currentColor}
-.status-option .check{display:none}
-/* красивая подсказка */
-[data-tooltip]{position:relative}
-[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(4px);background:#111827;color:#fff;font-size:12px;font-weight:600;letter-spacing:.01em;padding:6px 9px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .16s ease, transform .16s ease;z-index:50;box-shadow:0 6px 16px rgba(17,24,39,.18)}
-[data-tooltip]::before{content:"";position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#111827;opacity:0;pointer-events:none;transition:opacity .16s ease}
-[data-tooltip]:hover::after,[data-tooltip]:focus-visible::after{opacity:1;transform:translateX(-50%) translateY(0)}
-[data-tooltip]:hover::before,[data-tooltip]:focus-visible::before{opacity:1}
-.icon-btn:hover{background:#111827;color:#fff;border-color:#111827}
-.empty{padding:40px 20px;text-align:center;color:var(--muted)}
-.empty b{color:var(--text)}
-.cards{display:none;gap:12px}
-@media(max-width:920px){
-  .card[style*="sticky"]{position:static !important;top:auto !important}
+.btn-primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn-sm{padding:6px 10px;font-size:12.5px}
+.btn-ghost{background:transparent}
+
+/* Кнопки в стиле оригинального интерфейса S.T.A.L.K.E.R. */
+[data-theme="stalker"] .btn-primary {
+  background: url('./stalker/btn_menu_e.png') center / 100% 100% no-repeat !important;
+  color: #e59324 !important;
+  font-family: var(--font-tech) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  border: 1px solid #3c2f1a !important;
+  border-radius: 2px !important;
+  padding: 8px 18px !important;
+  text-shadow: 0 0 8px rgba(229, 147, 36, 0.5), 0 2px 2px #000 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+  transition: filter 0.15s ease, transform 0.1s ease !important;
+}
+[data-theme="stalker"] .btn-primary:hover {
+  background: url('./stalker/btn_menu_h.png') center / 100% 100% no-repeat !important;
+  color: #ffb74d !important;
+  border-color: #855b25 !important;
+  box-shadow: 0 0 14px rgba(229, 147, 36, 0.6) !important;
+}
+[data-theme="stalker"] .btn-primary:active {
+  background: url('./stalker/btn_menu_t.png') center / 100% 100% no-repeat !important;
+  transform: translateY(1px) !important;
+}
+[data-theme="stalker"] .btn-primary:disabled {
+  background: url('./stalker/btn_menu_d.png') center / 100% 100% no-repeat !important;
+  opacity: 0.6 !important;
+}
+
+[data-theme="stalker"] .btn,
+[data-theme="stalker"] .theme-btn,
+[data-theme="stalker"] .view-switch button,
+[data-theme="stalker"] .stats-toggle {
+  background: url('./stalker/btn_sm_e.png') center / 100% 100% no-repeat !important;
+  border: 1px solid #3c444a !important;
+  color: #d8dec8 !important;
+  font-family: var(--font-tech) !important;
+  text-shadow: 0 1px 2px #000 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7) !important;
+  border-radius: 2px !important;
+}
+[data-theme="stalker"] .btn:hover,
+[data-theme="stalker"] .theme-btn:hover,
+[data-theme="stalker"] .view-switch button:hover,
+[data-theme="stalker"] .stats-toggle:hover {
+  background: url('./stalker/btn_sm_h.png') center / 100% 100% no-repeat !important;
+  color: #ffaa33 !important;
+  border-color: #e59324 !important;
+  box-shadow: 0 0 10px rgba(229, 147, 36, 0.45) !important;
+}
+[data-theme="stalker"] .btn:active,
+[data-theme="stalker"] .theme-btn:active,
+[data-theme="stalker"] .view-switch button:active {
+  background: url('./stalker/btn_sm_t.png') center / 100% 100% no-repeat !important;
+}
+[data-theme="stalker"] .theme-btn.active,
+[data-theme="stalker"] .view-switch button.active {
+  background: url('./stalker/btn_sm_h.png') center / 100% 100% no-repeat !important;
+  color: #ff9800 !important;
+  border-color: #ff9800 !important;
+  box-shadow: 0 0 12px rgba(229, 147, 36, 0.6), inset 0 0 6px rgba(229, 147, 36, 0.3) !important;
+}
+
+/* Фильтры в стиле оригинальных металлических вкладок КПК S.T.A.L.K.E.R. */
+[data-theme="stalker"] .filters {
+  gap: 8px;
+  padding: 4px 0 8px;
+}
+[data-theme="stalker"] .filter-btn {
+  background: #25201b url('./stalker/tab_btn_e.png') center / 100% 100% no-repeat !important;
+  border: 1px solid #4a3e30 !important;
+  border-radius: 2px !important;
+  color: #e5992a !important;
+  padding: 8px 18px !important;
+  font-family: var(--font-tech) !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  text-shadow: 0 1px 1px #000, 0 1px 2px #000, 0 0 1px #000 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7) !important;
+  transition: all 0.15s ease !important;
+}
+[data-theme="stalker"] .filter-btn:hover {
+  background-image: url('./stalker/tab_btn_h.png') !important;
+  color: #ffb838 !important;
+  border-color: #a86c22 !important;
+  text-shadow: 0 1px 2px #000, 0 0 2px #000 !important;
+  box-shadow: 0 0 12px rgba(229, 147, 36, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+[data-theme="stalker"] .filter-btn:active {
+  background-image: url('./stalker/tab_btn_t.png') !important;
+  transform: translateY(0) !important;
+}
+[data-theme="stalker"] .filter-btn.active {
+  background: #3a2514 url('./stalker/tab_btn_t.png') center / 100% 100% no-repeat !important;
+  color: #ffd44d !important;
+  border-color: #ff9800 !important;
+  text-shadow: 0 1px 2px #000, 0 0 2px #000 !important;
+  box-shadow: 0 0 14px rgba(229, 147, 36, 0.45), inset 0 0 8px rgba(229, 147, 36, 0.25) !important;
+  transform: translateY(0) !important;
+}
+[data-theme="stalker"] .filter-btn .filter-count {
+  background: rgba(12, 15, 17, 0.85) !important;
+  color: #e5992a !important;
+  border: 1px solid #5a3814 !important;
+  border-radius: 2px !important;
+  padding: 1px 6px !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+[data-theme="stalker"] .filter-btn.active .filter-count {
+  background: #251609 !important;
+  color: #ffd44d !important;
+  border: 1px solid #e59324 !important;
+}
+[data-theme="stalker"] .filter-btn .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  box-shadow: 0 0 5px currentColor;
+  margin-right: 2px;
+}
+
+/* Панель статистики */
+.stats-bar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:9px 16px;margin-bottom:16px;
+  font-size:13px;box-shadow:var(--shadow);
+}
+.stats-main{font-weight:600;white-space:nowrap}
+.stats-details{display:inline-flex;gap:12px;align-items:center;flex-wrap:wrap}
+.stats-toggle{
+  margin-left:auto;font-size:12px;color:var(--text-muted);
+  background:none;border:none;cursor:pointer;padding:4px 8px;
+  border-radius:var(--radius-sm);font-family:inherit;
+}
+.stats-toggle:hover{color:var(--text);background:var(--badge-bg)}
+
+[data-theme="stalker"] .stats-bar {
+  background: rgba(18, 22, 24, 0.94) url('./stalker/frame_metal_tile.png');
+  border: 1px solid #3c444a;
+  border-left: 3px solid #e59324;
+  border-radius: 2px;
+  color: #cbd2c7;
+  font-family: var(--font-tech);
+}
+[data-theme="stalker"] .stats-main {
+  color: #ffaa33;
+  letter-spacing: 0.06em;
+}
+
+/* Тулбар поиска и фильтров */
+.toolbar{
+  display:flex;gap:10px;flex-wrap:wrap;
+  align-items:center;justify-content:space-between;margin-bottom:12px;
+}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1 1 320px}
+.toolbar-right{display:flex;gap:8px;align-items:center;color:var(--text-muted);font-size:13px}
+
+.search{position:relative;flex:1 1 240px;min-width:200px}
+.search input{
+  width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--input-bg);color:var(--text);
+  padding:8px 32px 8px 34px;font-size:13.5px;font-family:inherit;
+  outline:none;transition:.15s;
+}
+.search input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+[data-theme="stalker"] .search input {
+  background: #101315 url('./stalker/frame_metal_tile.png') !important;
+  border: 1px solid #3a4247 !important;
+  color: #f5f7ee !important;
+  font-family: var(--font-tech) !important;
+  letter-spacing: 0.04em;
+}
+[data-theme="stalker"] .search input:focus {
+  border-color: #e59324 !important;
+  box-shadow: 0 0 10px rgba(229, 147, 36, 0.4) !important;
+}
+[data-theme="stalker"] .search input::placeholder {
+  color: #727b80 !important;
+}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
+.search-icon svg{width:15px;height:15px;display:block}
+.search-clear{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--text-muted);cursor:pointer;
+  padding:3px;border-radius:4px;display:grid;place-items:center;
+}
+.search-clear:hover{color:var(--text)}
+.search-clear svg{width:14px;height:14px}
+
+.sort-select{
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--input-bg);color:var(--text);
+  padding:8px 12px;font-size:13px;font-family:inherit;
+  outline:none;cursor:pointer;
+}
+[data-theme="stalker"] .sort-select {
+  background: #15191c url('./stalker/btn_sm_e.png') center / 100% 100% no-repeat !important;
+  border: 1px solid #3a4247 !important;
+  color: #e0e5da !important;
+  font-family: var(--font-tech) !important;
+  border-radius: 2px !important;
+}
+[data-theme="stalker"] .sort-select:focus {
+  border-color: #e59324 !important;
+}
+
+/* Переключатель вида (Сетка / Таблица) */
+.view-switch{
+  display:inline-flex;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--card);overflow:hidden;
+}
+.view-switch button{
+  background:none;border:none;color:var(--text-muted);
+  padding:7px 10px;cursor:pointer;display:grid;place-items:center;
+  transition:.15s;
+}
+.view-switch button.active{background:var(--accent);color:var(--accent-text)}
+.view-switch button svg{width:16px;height:16px;display:block}
+
+/* Фильтры */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.filter-btn{
+  padding:6px 12px;border-radius:999px;border:1px solid var(--border);
+  background:var(--card);color:var(--text);font-size:12.5px;
+  cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:.15s;
+}
+.filter-btn:hover{border-color:var(--border-focus)}
+.filter-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+[data-theme="dark"] .filter-btn{color:#cbd5e1}
+[data-theme="dark"] .filter-btn:hover{color:#ffffff;border-color:#475569}
+.filter-count{
+  background:rgba(128,128,128,.15);padding:1px 6px;border-radius:999px;
+  font-size:11px;font-weight:600;
+}
+.filter-btn.active .filter-count{background:rgba(255,255,255,.25);color:#fff}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-planned{background:var(--orange)}
+.dot-reading{background:var(--blue)}
+.dot-read{background:var(--green)}
+.dot-dropped{background:var(--violet)}
+
+/* Сетка книг */
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:16px;width:100%;
 }
 @media(max-width:760px){
-  .container{padding:14px 12px 28px}
-  .header{margin-bottom:14px}
-  .brand h1{font-size:19px}
-  .brand p{font-size:12px}
-  .header-actions{width:100%}
-  .header-actions .btn{flex:1 1 calc(50% - 8px);justify-content:center;min-width:0;padding:8px 10px;font-size:13px}
-  .header-actions .btn-primary{flex:1 1 100%}
-  .stats{gap:8px}
-  .stat{padding:12px}
-  .toolbar{flex-direction:column;align-items:stretch;gap:10px}
-  .toolbar-left{width:100%;flex-wrap:nowrap}
-  .search{flex:1 1 auto;min-width:0}
-  .search input{min-width:0;width:100%}
-  .sort{width:100%}
-  .filters{flex-wrap:nowrap;overflow:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;gap:8px}
-  .filters::-webkit-scrollbar{display:none}
-  .filters button{white-space:nowrap;flex:0 0 auto}
-  table{display:none}
-  .table-wrap{border:none;background:transparent;overflow:visible}
-  .cards{display:grid;gap:10px}
-  .book-card{padding:14px}
-  .book-card-top{flex-wrap:wrap}
-  .book-card .actions{flex-wrap:wrap;gap:8px}
-  .book-card .actions .btn{flex:1 1 auto}
-  .book-card .status-select{margin-left:auto}
-  .status-menu{right:0;left:auto;max-width:calc(100vw - 24px)}
-  .cards .status-menu{right:0}
-  /* подсказка на мобильных — снизу, чтобы не улетала */
-  [data-tooltip]::after{bottom:auto;top:calc(100% + 9px)}
-  [data-tooltip]::before{bottom:auto;top:calc(100% + 3px);border-top-color:transparent;border-bottom-color:#111827}
-  .modal{margin:12px;max-width:none;width:auto}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 }
-.book-card{border:1px solid var(--border);border-radius:14px;background:#fff;padding:14px;display:flex;flex-direction:column;gap:10px}
-.book-card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;place-items:center;padding:16px;z-index:50}
-.modal-backdrop.open{display:grid}
-.modal{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:18px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.modal h3{margin:0 0 10px}
-.file-input{display:none}
-.view-switch{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:#fff}
-.view-switch button{padding:7px 12px;border:none;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--text);transition:.15s}
-.view-switch button.active{background:#111827;color:#fff}
-.view-switch button svg{width:16px;height:16px;display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;width:100%;max-width:100%}
-#tableWrap{display:none !important}
-#grid{display:grid !important}
-@media(max-width:760px){.grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.book-grid-card{padding:8px;gap:6px}
-.cover{border-radius:8px 8px 0 0}
-.cover-placeholder{padding:8px 6px;gap:4px}
-.cover-placeholder .ph-icon{width:20px;height:20px}
-.cover-placeholder .ph-author{font-size:9px}
-.cover-placeholder .ph-title{font-size:11px;-webkit-line-clamp:2}
-.grid-body{padding:8px;gap:6px}
-.grid-title{font-size:12px;-webkit-line-clamp:1}
-.grid-author{font-size:11px}
-.grid-desc{font-size:11px;-webkit-line-clamp:2}
-.grid-actions{gap:4px;padding-top:6px}
-.grid-actions .icon-btn{width:26px;height:26px;flex:0 0 26px}
+@media(max-width:420px){
+  .grid{grid-template-columns:repeat(2,1fr);gap:8px}
 }
-@media(max-width:420px){.grid{grid-template-columns:repeat(2,1fr);gap:6px}
-.book-grid-card{padding:6px}
+
+.book-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:var(--shadow);
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  position:relative;
 }
-.book-grid-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:visible;display:flex;flex-direction:column;transition:.15s;isolation:isolate}
-.book-grid-card:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(17,24,39,.08);z-index:2}
-.cover{aspect-ratio:3/4.2;background:#f3f4f6;position:relative;overflow:hidden;display:grid;place-items:center;border-radius:14px 14px 0 0}
-a.cover{cursor:pointer;text-decoration:none;color:inherit}
-a.cover:hover{opacity:.92}
+.book-card:hover{
+  transform:translateY(-2px);box-shadow:var(--shadow-hover);
+  border-color:var(--border-focus);z-index:2;
+}
+
+[data-theme="stalker"] .book-card {
+  background: #171b1d url('./stalker/frame_metal_tile.png');
+  border: 1px solid #3c444a;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.8), 0 4px 18px rgba(0, 0, 0, 0.85);
+  border-radius: 2px;
+  position: relative;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+[data-theme="stalker"] .book-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: url('./stalker/card_trade_header.png') repeat-x center top / auto 100%;
+  z-index: 5;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+[data-theme="stalker"] .book-card::after{
+  content: "[ДОСЬЕ]";
+  position: absolute;
+  top: 15px;
+  right: 8px;
+  font-size: 9.5px;
+  color: #e59324;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  font-family: var(--font-tech);
+  text-shadow: 0 1px 2px #000;
+  background: rgba(15, 18, 20, 0.92);
+  padding: 1px 6px;
+  border: 1px solid #4a5258;
+  border-radius: 2px;
+  z-index: 4;
+}
+[data-theme="stalker"] .book-card:hover {
+  border-color: #e59324;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 16px rgba(229, 147, 36, 0.4), 0 8px 24px #000;
+  transform: translateY(-3px);
+}
+
+/* Обложка */
+.cover{
+  aspect-ratio:3/4.2;background:var(--badge-bg);
+  position:relative;overflow:hidden;display:grid;place-items:center;
+}
+[data-theme="stalker"] .cover {
+  background: #101315 url('./stalker/frame_metal_tile.png');
+  border-bottom: 1px solid #363d42;
+  margin-top: 11px;
+}
+a.cover{cursor:pointer}
+a.cover:hover img{opacity:.92}
 .cover img{width:100%;height:100%;object-fit:cover;display:block}
-.cover-placeholder{padding:16px 14px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;height:100%;width:100%}
-.cover-placeholder .ph-icon{width:32px;height:32px;color:#9ca3af}
-.cover-placeholder .ph-author{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cover-placeholder .ph-title{font-size:13px;font-weight:700;line-height:1.25;font-family:Merriweather,serif;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.grid-body{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1}
-.grid-title{font-size:13px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.grid-author{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.grid-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.grid-actions{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:8px;border-top:1px solid #f3f4f6}
-.fab{position:fixed;right:24px;bottom:24px;width:56px;height:56px;border-radius:50%;background:#111827;color:#fff;border:none;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 24px rgba(17,24,39,.22),0 4px 8px rgba(17,24,39,.12);z-index:40;transition:.18s}
-.fab:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 30px rgba(17,24,39,.28)}
-.fab:active{transform:none}
-.fab svg{width:24px;height:24px;display:block}
-@media(max-width:760px){.fab{right:16px;bottom:16px;width:52px;height:52px}}
-.toast{position:fixed;bottom:16px;right:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:10px;font-size:13px;display:none;z-index:60}
-.toast.show{display:block}
-.kbd{font-size:11px;border:1px solid #e5e7eb;background:#f9fafb;padding:1px 6px;border-radius:6px}
+.cover-placeholder{
+  padding:14px;text-align:center;display:flex;flex-direction:column;
+  gap:6px;align-items:center;justify-content:center;height:100%;width:100%;
+}
+[data-theme="stalker"] .cover-placeholder {
+  background: rgba(14, 17, 19, 0.85);
+}
+.cover-placeholder .ph-icon{width:32px;height:32px;color:var(--text-muted);opacity:.7}
+.cover-placeholder .ph-author{
+  font-size:11px;font-weight:600;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.04em;line-height:1.2;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+[data-theme="stalker"] .cover-placeholder .ph-author {
+  color: #e59324 !important;
+  font-family: var(--font-tech);
+  letter-spacing: 0.08em;
+}
+.cover-placeholder .ph-title{
+  font-size:12.5px;font-weight:700;line-height:1.25;font-family:var(--font-display);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+[data-theme="stalker"] .cover-placeholder .ph-title {
+  color: #f2f4ec !important;
+  font-family: var(--font-tech);
+  text-shadow: 0 1px 3px #000;
+}
+
+/* Тело карточки */
+.card-body{padding:12px;display:flex;flex-direction:column;gap:7px;flex:1}
+.card-title{
+  font-size:13.5px;font-weight:600;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+[data-theme="stalker"] .card-title{
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #f5f7ee !important;
+  text-shadow: 0 1px 2px #000;
+  letter-spacing: 0.03em;
+}
+.card-author{
+  font-size:12px;color:var(--text-muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+[data-theme="stalker"] .card-author {
+  color: #e59324 !important;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+/* Герои и Описание */
+.card-characters{
+  font-size:11.5px;color:var(--text);display:flex;align-items:center;gap:5px;
+  line-height:1.3;background:var(--badge-bg);border:1px solid var(--badge-border);
+  padding:3px 7px;border-radius:var(--radius-sm);
+}
+[data-theme="stalker"] .card-characters {
+  background: rgba(14, 17, 19, 0.92);
+  border: 1px solid #384046;
+  color: #d1d7cc;
+  font-family: var(--font-tech);
+}
+.card-characters svg{width:13px;height:13px;flex:0 0 13px;color:var(--text-muted)}
+.card-characters span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.card-desc{
+  font-size:11.5px;color:var(--text-muted);line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;word-break:break-word;
+}
+[data-theme="stalker"] .card-desc {
+  color: #a4aba0;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.card-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.card-actions{
+  display:flex;gap:5px;align-items:center;margin-top:auto;
+  padding-top:8px;border-top:1px solid var(--border);
+}
+
+/* Бейджи статусов */
+.badge{
+  padding:4px 8px;border-radius:999px;font-size:11px;font-weight:600;
+  border:1px solid var(--badge-border);background:var(--badge-bg);
+  color:var(--text);display:inline-flex;align-items:center;gap:5px;
+  white-space:nowrap;line-height:1;
+}
+.badge svg{width:12px;height:12px;display:block}
+.badge-planned{border-color:rgba(217,119,6,.25);color:var(--orange)}
+.badge-reading{border-color:rgba(37,99,235,.25);color:var(--blue)}
+.badge-read{border-color:rgba(5,150,105,.25);color:var(--green)}
+.badge-dropped{border-color:rgba(124,58,237,.25);color:var(--violet)}
+
+[data-theme="stalker"] .badge{
+  border-radius:2px;font-family:var(--font-tech);text-transform:uppercase;letter-spacing:.06em;
+  padding:3px 8px;background:rgba(14,18,20,0.95);border:1px solid #3c444a;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+  font-size: 11px;
+}
+[data-theme="stalker"] .badge-read {
+  border-color: #689f38;
+  color: #aed581;
+}
+[data-theme="stalker"] .badge-reading {
+  border-color: #0288d1;
+  color: #4fc3f7;
+}
+[data-theme="stalker"] .badge-planned {
+  border-color: #f57c00;
+  color: #ffb74d;
+}
+[data-theme="stalker"] .badge-dropped {
+  border-color: #c62828;
+  color: #ef5350;
+}
+[data-theme="stalker"] .badge svg {
+  display: none !important;
+}
+[data-theme="stalker"] .badge::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 5px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+[data-theme="stalker"] .badge-read::before {
+  background-image: url('./stalker/icon_completed.png');
+}
+[data-theme="stalker"] .badge-reading::before {
+  background-image: url('./stalker/icon_in_progress.png');
+}
+[data-theme="stalker"] .badge-planned::before {
+  background-image: url('./stalker/icon_knowledge.png');
+}
+[data-theme="stalker"] .badge-dropped::before {
+  background-image: url('./stalker/icon_failed.png');
+}
+
+/* Кнопки действий */
+.icon-btn{
+  width:30px;height:30px;flex:0 0 30px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--card);color:var(--text);
+  display:grid;place-items:center;cursor:pointer;transition:.15s;
+}
+.icon-btn:hover{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.icon-btn svg{width:15px;height:15px;display:block}
+
+/* Селектор статуса в карточке */
+.status-select-wrap{position:relative}
+.status-menu{
+  position:absolute;bottom:calc(100% + 6px);right:0;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-hover);
+  padding:5px;z-index:40;display:flex;gap:4px;
+}
+.status-option{
+  width:32px;height:32px;display:grid;place-items:center;
+  border-radius:var(--radius-sm);border:1px solid transparent;
+  background:transparent;color:var(--text);cursor:pointer;transition:.15s;
+}
+.status-option:hover{background:var(--badge-bg);border-color:var(--border)}
+.status-option.is-active{background:var(--accent);color:var(--accent-text)}
+.status-option svg{width:15px;height:15px}
+
+/* Табличный вид */
+.table-wrap{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
+}
+[data-theme="stalker"] .table-wrap {
+  background: rgba(18, 22, 24, 0.96) url('./stalker/frame_metal_tile.png');
+  border: 1px solid #3c444a;
+  border-radius: 2px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.9);
+}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+thead th{
+  font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--text-muted);text-align:left;padding:12px;
+  background:var(--table-head);border-bottom:1px solid var(--border);
+}
+[data-theme="stalker"] thead th {
+  background: rgba(24, 29, 32, 0.98);
+  border-bottom: 2px solid #e59324;
+  color: #ffaa33;
+  font-family: var(--font-tech);
+  letter-spacing: 0.08em;
+}
+tbody td{
+  padding:12px;font-size:13px;border-bottom:1px solid var(--border);
+  vertical-align:middle;word-break:break-word;
+}
+tbody tr:hover{background:var(--table-hover)}
+tbody tr:last-child td{border-bottom:none}
+[data-theme="stalker"] tbody tr {
+  border-bottom: 1px solid #283035;
+}
+[data-theme="stalker"] tbody tr:hover {
+  background: rgba(45, 52, 57, 0.7) !important;
+}
+
+.table-author{font-weight:600}
+[data-theme="stalker"] .table-author {
+  color: #e59324;
+  font-family: var(--font-tech);
+}
+.table-title{font-weight:500}
+[data-theme="stalker"] .table-title {
+  color: #f5f7ee;
+  font-family: var(--font-tech);
+}
+.table-characters{font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:4px}
+.table-characters svg{width:12px;height:12px;flex-shrink:0}
+[data-theme="stalker"] .table-characters {
+  color: #a4aba0;
+  font-family: var(--font-tech);
+}
+.table-desc{
+  font-size:12px;color:var(--text-muted);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+[data-theme="stalker"] .table-desc {
+  color: #9aa299;
+}
+
+/* Модальное окно */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  backdrop-filter:blur(2px);display:grid;place-items:center;
+  padding:16px;z-index:90;overflow-y:auto;
+}
+.modal{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);max-width:540px;width:100%;
+  padding:20px;box-shadow:0 25px 60px rgba(0,0,0,.3);
+  position:relative;
+}
+[data-theme="stalker"] .modal{
+  background: #101416 url('./stalker/panel_options.png') center / 100% 100% no-repeat !important;
+  border: 2px solid #4a545a !important;
+  border-radius: 4px !important;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.95), 0 0 25px rgba(229, 147, 36, 0.35) !important;
+  padding: 24px 22px !important;
+  color: #f0f2ea !important;
+}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-head h3{margin:0;font-size:17px;font-family:var(--font-display)}
+[data-theme="stalker"] .modal-head h3 {
+  color: #ff9800 !important;
+  text-shadow: 0 0 8px rgba(229, 147, 36, 0.6) !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.form{display:flex;flex-direction:column;gap:12px}
+label{font-size:12.5px;font-weight:600;color:var(--text);display:flex;flex-direction:column;gap:5px}
+input,select,textarea{
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:9px 12px;font-size:13.5px;background:var(--input-bg);
+  color:var(--text);font-family:inherit;outline:none;transition:.15s;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+[data-theme="stalker"] input,
+[data-theme="stalker"] select,
+[data-theme="stalker"] textarea {
+  background-color: #0d1012 !important;
+  background-image: url('./stalker/frame_metal_tile.png') !important;
+  border: 1px solid #3c444a !important;
+  color: #f5f7ee !important;
+  font-family: var(--font-tech) !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85) !important;
+}
+[data-theme="stalker"] input:focus,
+[data-theme="stalker"] select:focus,
+[data-theme="stalker"] textarea:focus {
+  border-color: #e59324 !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 10px rgba(229, 147, 36, 0.45) !important;
+}
+textarea{resize:vertical;min-height:70px}
+.hint{font-size:11.5px;font-weight:400;color:var(--text-muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* FAB плавающая кнопка */
+.fab{
+  position:fixed;right:24px;bottom:24px;width:56px;height:56px;
+  border-radius:50%;background:var(--accent);color:var(--accent-text);
+  border:none;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 10px 24px rgba(0,0,0,.25);z-index:50;transition:.18s;
+}
+.fab:hover{transform:translateY(-2px) scale(1.03)}
+.fab svg{width:24px;height:24px}
+[data-theme="stalker"] .fab {
+  background: #14171a url('./stalker/skull.png') center / 60% no-repeat !important;
+  border: 2px solid #e59324 !important;
+  box-shadow: 0 0 18px rgba(229, 147, 36, 0.6), 0 8px 24px #000 !important;
+  border-radius: 2px !important;
+}
+[data-theme="stalker"] .fab:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 0 24px rgba(229, 147, 36, 0.85), 0 8px 24px #000 !important;
+}
+[data-theme="stalker"] .fab svg {
+  display: none !important;
+}
+@media(max-width:760px){.fab{right:16px;bottom:16px;width:50px;height:50px}}
+
+/* Скроллбары в стиле S.T.A.L.K.E.R. */
+[data-theme="stalker"] ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+[data-theme="stalker"] ::-webkit-scrollbar-track {
+  background: #0e1113 url('./stalker/scb_track.png') repeat-y center;
+  border: 1px solid #283035;
+}
+[data-theme="stalker"] ::-webkit-scrollbar-thumb {
+  background: #252b30 url('./stalker/scb_thumb.png') center no-repeat;
+  border: 1px solid #3c444a;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.7);
+}
+[data-theme="stalker"] ::-webkit-scrollbar-thumb:hover {
+  background-color: #343d44;
+  border-color: #e59324;
+  box-shadow: 0 0 8px rgba(229, 147, 36, 0.5);
+}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--accent);color:var(--accent-text);
+  padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;
+  font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.3);
+  z-index:100;opacity:0;pointer-events:none;transition:.22s cubic-bezier(.16,1,.3,1);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Empty state */
+.empty{
+  padding:48px 20px;text-align:center;color:var(--text-muted);
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+}
+.empty svg{width:44px;height:44px;margin-bottom:8px;opacity:.6}
+
+/* Tooltip */
+[data-tooltip]{position:relative}
+[data-tooltip]::after{
+  content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%) translateY(4px);background:#111827;color:#fff;
+  font-size:11.5px;font-weight:600;padding:5px 8px;border-radius:6px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:.15s;z-index:60;
+}
+[data-tooltip]:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Utility */
+.file-input{display:none}
 </style>
+<script>
+  (function() {
+    try {
+      var t = localStorage.getItem('bookshelf_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+      var b = localStorage.getItem('bookshelf_stalker_bg') || 'menu';
+      document.documentElement.setAttribute('data-stalker-bg', b);
+    } catch(e) {}
+  })();
+</script>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="brand">
-      <div class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
+
+<div id="app" class="app-root" :data-theme="theme" :data-stalker-bg="stalkerBg">
+  <div class="container">
+    <!-- Шапка -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <!-- Иконка радиации в стиле Сталкера, иначе книга -->
+          <svg v-if="theme === 'stalker'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 9V3M14.6 13.5l5.2 3M9.4 13.5l-5.2 3"/>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            <path d="M8 7h8"/><path d="M8 11h8"/>
+          </svg>
+        </div>
+        <div>
+          <h1>{{ brandTitle }}</h1>
+          <p>{{ brandSubtitle }}</p>
+        </div>
       </div>
-      <div>
-        <h1>VFYARL</h1>
-        <p>VantuzFed's Yet Another Reading List</p>
+
+      <div class="header-actions">
+        <!-- Переключатель тем: Светлая / Тёмная / Сталкер -->
+        <div class="theme-switch" role="group" aria-label="Тема оформления">
+          <button
+            class="theme-btn"
+            :class="{ active: theme === 'light' }"
+            @click="setTheme('light')"
+            title="Светлая тема"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span>Светлая</span>
+          </button>
+          <button
+            class="theme-btn"
+            :class="{ active: theme === 'dark' }"
+            @click="setTheme('dark')"
+            title="Тёмная тема"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span>Тёмная</span>
+          </button>
+          <button
+            class="theme-btn"
+            :class="{ active: theme === 'stalker' }"
+            @click="setTheme('stalker')"
+            title="S.T.A.L.K.E.R. Главное меню & КПК"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 9V3M14.6 13.5l5.2 3M9.4 13.5l-5.2 3"/></svg>
+            <span>S.T.A.L.K.E.R.</span>
+          </button>
+        </div>
+
+        <!-- Переключатель обоев меню S.T.A.L.K.E.R. -->
+        <div v-if="theme === 'stalker'" class="stalker-bg-switch" role="group" aria-label="Фон главного меню">
+          <span class="stalker-bg-label">Фон:</span>
+          <button
+            class="stalker-bg-btn"
+            :class="{ active: stalkerBg === 'menu' }"
+            @click="setStalkerBg('menu')"
+            title="Оригинальное главное меню: Штаб с плакатом и снайперской винтовкой"
+          >Штаб</button>
+          <button
+            class="stalker-bg-btn"
+            :class="{ active: stalkerBg === 'tractor' }"
+            @click="setStalkerBg('tractor')"
+            title="Заброшенный трактор на Свалке"
+          >Свалка</button>
+          <button
+            class="stalker-bg-btn"
+            :class="{ active: stalkerBg === 'barrel' }"
+            @click="setStalkerBg('barrel')"
+            title="Разрушенная стена с костром и бочкой"
+          >Костёр</button>
+        </div>
+
+        <!-- Экспорт / Импорт / Демо -->
+        <label class="btn btn-ghost" for="importFile" title="Загрузить список из JSON или CSV">
+          ⤓ Импорт
+        </label>
+        <input id="importFile" class="file-input" type="file" accept=".json,.csv" @change="handleFileImport"/>
+
+        <button class="btn" @click="exportJson" title="Выгрузить в формате JSON">⬇ JSON</button>
+        <button class="btn" @click="exportCsv" title="Выгрузить в формате CSV">⬇ CSV</button>
+        <button class="btn btn-primary" @click="loadDemo" title="Добавить демонстрационные книги">+ Демо-книги</button>
+      </div>
+    </header>
+
+    <!-- Панель статистики -->
+    <div class="stats-bar">
+      <span class="stats-main">{{ theme === 'stalker' ? '[АРХИВ КПК]' : 'Всего книг' }}: <b>{{ stats.total }}</b></span>
+      <span v-show="statsExpanded" class="stats-details">
+        <span>· Прочитано: <b style="color:var(--green)">{{ stats.read }}</b></span>
+        <span>· Читаю: <b style="color:var(--blue)">{{ stats.reading }}</b></span>
+        <span>· В планах: <b style="color:var(--orange)">{{ stats.planned }}</b></span>
+        <span>· Отложено: <b style="color:var(--violet)">{{ stats.dropped }}</b></span>
+      </span>
+      <button class="stats-toggle" @click="statsExpanded = !statsExpanded">
+        {{ statsExpanded ? 'Скрыть детали' : 'Подробная статистика' }}
+      </button>
+    </div>
+
+    <!-- Тулбар -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <!-- Поиск -->
+        <div class="search">
+          <span class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input
+            v-model="query"
+            :placeholder="theme === 'stalker' ? '[ПОИСК ПО БАЗЕ ДАННЫХ КПК...]' : 'Поиск по автору, названию, героям...'"
+          />
+          <button v-if="query" class="search-clear" @click="query = ''" title="Очистить поиск">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <!-- Сортировка -->
+        <select v-model="sort" class="sort-select">
+          <option value="newest">Сначала новые</option>
+          <option value="author">По автору (А→Я)</option>
+          <option value="title">По названию (А→Я)</option>
+          <option value="status">По статусу</option>
+        </select>
+
+        <!-- Переключатель Сетка / Таблица -->
+        <div class="view-switch" role="group" aria-label="Режим отображения">
+          <button
+            :class="{ active: viewMode === 'grid' }"
+            @click="setViewMode('grid')"
+            title="Сетка карточек"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button
+            :class="{ active: viewMode === 'table' }"
+            @click="setViewMode('table')"
+            title="Табличный вид"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <span>{{ filteredBooks.length }} {{ plural(filteredBooks.length) }}</span>
       </div>
     </div>
-    <div class="header-actions">
-      <label class="btn btn-ghost" for="importFile">⤓ Импорт</label>
-      <input id="importFile" class="file-input" type="file" accept=".json,.csv"/>
-      <button class="btn" id="btnExportJson">⬇ Экспорт JSON</button>
-      <button class="btn" id="btnExportCsv">⬇ CSV</button>
-      <button class="btn btn-primary" id="btnAddDemo">+ Демо-книги</button>
+
+    <!-- Фильтры статусов -->
+    <div class="filters">
+      <button
+        class="filter-btn"
+        :class="{ active: filter === 'all' }"
+        @click="filter = 'all'"
+      >
+        Все <span class="filter-count">{{ counts.all }}</span>
+      </button>
+      <button
+        class="filter-btn"
+        :class="{ active: filter === 'planned' }"
+        @click="filter = 'planned'"
+      >
+        <span class="dot dot-planned"></span> {{ theme === 'stalker' ? '[ЦЕЛЬ: ВЗЯТО]' : 'В планах' }}
+        <span class="filter-count">{{ counts.planned }}</span>
+      </button>
+      <button
+        class="filter-btn"
+        :class="{ active: filter === 'reading' }"
+        @click="filter = 'reading'"
+      >
+        <span class="dot dot-reading"></span> {{ theme === 'stalker' ? '[В ПРОЦЕССЕ]' : 'Читаю' }}
+        <span class="filter-count">{{ counts.reading }}</span>
+      </button>
+      <button
+        class="filter-btn"
+        :class="{ active: filter === 'read' }"
+        @click="filter = 'read'"
+      >
+        <span class="dot dot-read"></span> {{ theme === 'stalker' ? '[ВЫПОЛНЕНО]' : 'Прочитано' }}
+        <span class="filter-count">{{ counts.read }}</span>
+      </button>
+      <button
+        class="filter-btn"
+        :class="{ active: filter === 'dropped' }"
+        @click="filter = 'dropped'"
+      >
+        <span class="dot dot-dropped"></span> {{ theme === 'stalker' ? '[ОТМЕНЕНО]' : 'Отложено' }}
+        <span class="filter-count">{{ counts.dropped }}</span>
+      </button>
+
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn btn-sm" @click="copyJson" title="Скопировать JSON в буфер">Копировать JSON</button>
+        <button class="btn btn-sm" @click="clearAll" title="Удалить все книги">Очистить список</button>
+      </div>
     </div>
-  </div>
 
-  <div class="stats-bar" id="statsBar">
-    <span class="stats-main">Всего книг <b id="statTotal">0</b></span>
-    <span id="statsDetails" class="stats-details" style="display:none">
-      <span>· Прочитано <b id="statRead" style="color:var(--green)">0</b></span>
-      <span>· Читаю <b id="statReading" style="color:var(--blue)">0</b></span>
-      <span>· В планах <b id="statPlanned" style="color:var(--orange)">0</b></span>
-      <span>· Отложено <b id="statDropped" style="color:var(--violet)">0</b></span>
-    </span>
-    <button id="toggleStats" class="stats-toggle" aria-expanded="false">Показать всю статистику</button>
-  </div>
-
-  <div class="layout" style="grid-template-columns:1fr">
-    <div>
-      <div class="toolbar">
-        <div class="toolbar-left">
-          <div class="search">
-            <span>⌕</span>
-            <input id="q" placeholder="Поиск по автору, названию, героям..."/>
+    <!-- Основной контент: СЕТКА -->
+    <div v-if="viewMode === 'grid' && filteredBooks.length > 0" class="grid">
+      <div v-for="b in filteredBooks" :key="b.id" class="book-card">
+        <!-- Обложка -->
+        <a v-if="b.link" :href="b.link" target="_blank" rel="noopener" class="cover" :title="'Открыть ссылку: ' + b.title">
+          <img v-if="b.cover" :src="b.cover" :alt="b.title" loading="lazy" @error="b.cover = ''"/>
+          <div v-else class="cover-placeholder">
+            <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <div class="ph-author">{{ b.author }}</div>
+            <div class="ph-title">{{ b.title }}</div>
           </div>
-          <select id="sort" class="sort">
-            <option value="newest">Сначала новые</option>
-            <option value="author">По автору (А→Я)</option>
-            <option value="title">По названию</option>
-            <option value="status">По статусу</option>
+        </a>
+        <div v-else class="cover">
+          <img v-if="b.cover" :src="b.cover" :alt="b.title" loading="lazy" @error="b.cover = ''"/>
+          <div v-else class="cover-placeholder">
+            <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <div class="ph-author">{{ b.author }}</div>
+            <div class="ph-title">{{ b.title }}</div>
+          </div>
+        </div>
+
+        <!-- Контент карточки -->
+        <div class="card-body">
+          <div class="card-title" :title="b.title">{{ b.title }}</div>
+          <div class="card-author" :title="b.author">{{ b.author }}</div>
+
+          <!-- Главные герои -->
+          <div v-if="b.characters" class="card-characters" :title="'Главные герои: ' + b.characters">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>{{ b.characters }}</span>
+          </div>
+
+          <!-- Описание -->
+          <div v-if="b.description" class="card-desc" :title="b.description">
+            {{ b.description }}
+          </div>
+
+          <!-- Статус -->
+          <div class="card-meta">
+            <span class="badge" :class="'badge-' + b.status">
+              <svg v-if="b.status === 'read'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+              <svg v-else-if="b.status === 'reading'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h6"/><path d="M8 11h6"/></svg>
+              <svg v-else-if="b.status === 'planned'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 14.5 14.5"/></svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              {{ statusLabels[b.status] || b.status }}
+            </span>
+          </div>
+
+          <!-- Действия -->
+          <div class="card-actions">
+            <button class="icon-btn" @click="openEditModal(b)" title="Редактировать" aria-label="Редактировать">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="icon-btn" @click="deleteBook(b.id)" title="Удалить" aria-label="Удалить">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+
+            <!-- Быстрая смена статуса -->
+            <div class="status-select-wrap" style="margin-left:auto">
+              <button
+                class="icon-btn"
+                @click="toggleStatusMenu(b.id)"
+                :title="'Сменить статус: ' + statusLabels[b.status]"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+              </button>
+              <div v-if="activeStatusMenu === b.id" class="status-menu">
+                <button
+                  class="status-option"
+                  :class="{ 'is-active': b.status === 'planned' }"
+                  @click="updateStatus(b.id, 'planned')"
+                  title="В планах"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 14.5 14.5"/></svg>
+                </button>
+                <button
+                  class="status-option"
+                  :class="{ 'is-active': b.status === 'reading' }"
+                  @click="updateStatus(b.id, 'reading')"
+                  title="Читаю"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h6"/><path d="M8 11h6"/></svg>
+                </button>
+                <button
+                  class="status-option"
+                  :class="{ 'is-active': b.status === 'read' }"
+                  @click="updateStatus(b.id, 'read')"
+                  title="Прочитано"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+                </button>
+                <button
+                  class="status-option"
+                  :class="{ 'is-active': b.status === 'dropped' }"
+                  @click="updateStatus(b.id, 'dropped')"
+                  title="Отложено"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Основной контент: ТАБЛИЦА -->
+    <div v-else-if="viewMode === 'table' && filteredBooks.length > 0" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:20%">Автор (ФИО)</th>
+            <th style="width:24%">Название</th>
+            <th style="width:30%">Герои / Описание / Ссылка</th>
+            <th style="width:14%">Статус</th>
+            <th style="width:12%">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="b in filteredBooks" :key="b.id">
+            <td><div class="table-author">{{ b.author }}</div></td>
+            <td><div class="table-title">{{ b.title }}</div></td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div v-if="b.characters" class="table-characters" :title="'Главные герои: ' + b.characters">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span><b>Герои:</b> {{ b.characters }}</span>
+                </div>
+                <div v-if="b.description" class="table-desc" :title="b.description">
+                  {{ b.description }}
+                </div>
+                <div v-if="b.link">
+                  <a :href="b.link" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:12px">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:12px;height:12px"><path d="M10 13a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1"/><path d="M14 11a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1"/></svg>
+                    {{ host(b.link) }}
+                  </a>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge" :class="'badge-' + b.status">
+                {{ statusLabels[b.status] || b.status }}
+              </span>
+            </td>
+            <td>
+              <div style="display:flex;gap:5px;align-items:center">
+                <button class="icon-btn" @click="openEditModal(b)" title="Редактировать">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="icon-btn" @click="deleteBook(b.id)" title="Удалить">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Пустое состояние -->
+    <div v-if="filteredBooks.length === 0" class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <div style="font-weight:600;font-size:15px;margin-bottom:4px">
+        {{ query ? 'Ничего не найдено по вашему запросу' : 'Список книг пуст' }}
+      </div>
+      <div style="font-size:13px;margin-bottom:14px">
+        {{ query ? 'Попробуйте изменить поисковую фразу или сбросить фильтры' : 'Добавьте первую книгу вручную или загрузите демонстрационный список' }}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button v-if="query" class="btn btn-sm" @click="query = ''">Сбросить поиск</button>
+        <button v-else class="btn btn-primary btn-sm" @click="loadDemo">+ Загрузить демо-книги</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Плавающая кнопка добавления -->
+  <button class="fab" @click="openAddModal" title="Добавить книгу" aria-label="Добавить книгу">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <!-- Единое модальное окно: Добавление / Редактирование -->
+  <div v-if="modalOpen" class="modal-backdrop" @click.self="closeModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>{{ modalMode === 'add' ? 'Добавить книгу' : 'Редактировать книгу' }}</h3>
+        <button class="icon-btn" @click="closeModal" aria-label="Закрыть">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form class="form" @submit.prevent="saveBook">
+        <label>
+          ФИО автора
+          <input v-model.trim="form.author" placeholder="Напр. Лев Толстой" required ref="authorInput"/>
+        </label>
+
+        <label>
+          Название книги
+          <input v-model.trim="form.title" placeholder="Напр. Война и мир" required/>
+        </label>
+
+        <label>
+          Главные герои
+          <input v-model.trim="form.characters" placeholder="Напр. Пьер Безухов, Андрей Болконский, Наташа Ростова"/>
+          <span class="hint">необязательно · через запятую</span>
+        </label>
+
+        <label>
+          Описание книги
+          <textarea v-model.trim="form.description" rows="3" placeholder="Краткое описание, сюжет или заметки о книге..."></textarea>
+        </label>
+
+        <label>
+          Ссылка на книгу
+          <input v-model.trim="form.link" type="url" placeholder="https://..."/>
+          <span class="hint">необязательно · если есть — кликабельная</span>
+        </label>
+
+        <label>
+          Обложка (URL)
+          <div style="display:flex;gap:6px;align-items:center">
+            <input v-model.trim="form.cover" type="url" placeholder="https://.../cover.jpg" style="flex:1"/>
+            <button
+              type="button"
+              class="btn btn-sm"
+              @click="findCover"
+              :disabled="coverSearching"
+              title="Найти обложку в Open Library / Google Books"
+            >
+              <svg v-if="coverSearching" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke-opacity=".25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+              {{ coverSearching ? 'Поиск…' : 'Найти' }}
+            </button>
+          </div>
+          <span class="hint">необязательно · автопоиск по автору и названию</span>
+        </label>
+
+        <!-- Превью найденной обложки -->
+        <div v-if="form.cover" style="display:flex;gap:10px;align-items:center;padding:8px;background:var(--badge-bg);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <img :src="form.cover" alt="" style="width:36px;height:48px;object-fit:cover;border-radius:3px"/>
+          <span style="font-size:12px;color:var(--text-muted);flex:1">Обложка установлена</span>
+          <button type="button" class="btn btn-sm" style="padding:4px 8px" @click="form.cover = ''">✕ Убрать</button>
+        </div>
+
+        <label>
+          Статус
+          <select v-model="form.status">
+            <option value="planned">В планах</option>
+            <option value="reading">Читаю</option>
+            <option value="read">Прочитано</option>
+            <option value="dropped">Отложено</option>
           </select>
-        </div>
-        <div class="toolbar-right" id="countLabel">0 книг</div>
-      </div>
+        </label>
 
-      <div class="filters" id="filters" style="margin-bottom:12px">
-        <button data-f="all" class="active">Все</button>
-        <button data-f="planned"><span class="dot dot-planned"></span> В планах</button>
-        <button data-f="reading"><span class="dot dot-reading"></span> Читаю</button>
-        <button data-f="read"><span class="dot dot-read"></span> Прочитано</button>
-        <button data-f="dropped"><span class="dot dot-dropped"></span> Отложено</button>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <button class="btn btn-sm" id="btnClearAll" title="Удалить все записи">Очистить список</button>
-        <button class="btn btn-sm" id="btnCopyJson">Копировать JSON</button>
-      </div>
-
-        <div class="table-wrap" id="tableWrap">
-          <table id="table">
-            <thead>
-              <tr>
-                <th style="width:18%">Автор (ФИО)</th>
-                <th style="width:22%">Название</th>
-                <th style="width:32%">Герои / Описание / Ссылка</th>
-                <th style="width:14%">Статус</th>
-                <th style="width:14%">Действия</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
-          <div class="cards" id="cards"></div>
+        <div class="row2" style="margin-top:6px">
+          <button type="submit" class="btn btn-primary">
+            {{ modalMode === 'add' ? 'Добавить' : 'Сохранить' }}
+          </button>
+          <button type="button" class="btn" @click="closeModal">Отмена</button>
         </div>
-        <div id="grid" class="grid" style="display:none"></div>
-        <div id="empty" class="empty" style="display:none">
-          <div style="margin-bottom:8px;display:grid;place-items:center;color:#9ca3af"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:36px;height:36px"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22 6 12 13 2 6"/></svg></div>
-          <b>Список пуст</b><br/>
-          Добавьте первую книгу через форму слева.<br/>
-          <span class="hint">Подсказка: нажмите «Демо-книги» чтобы увидеть пример.</span>
-        </div>
+      </form>
     </div>
   </div>
-</div>
 
-<!-- FAB -->
-<button id="fabAdd" class="fab" aria-label="Добавить книгу" data-tooltip="Добавить книгу"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-
-<!-- Модалка добавления -->
-<div id="addModal" class="modal-backdrop">
-  <div class="modal" style="max-width:560px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
-      <h3 style="margin:0">Добавить книгу</h3>
-      <button type="button" id="btnCloseAdd" class="icon-btn" aria-label="Закрыть" style="width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <form id="bookForm" class="form" autocomplete="off">
-      <label>ФИО автора
-        <input id="fAuthor" placeholder="Напр. Лев Толстой" required/>
-      </label>
-      <label>Название
-        <input id="fTitle" placeholder="Напр. Война и мир" required/>
-      </label>
-      <label>Главные герои
-        <input id="fCharacters" placeholder="Напр. Пьер Безухов, Андрей Болконский, Наташа Ростова"/>
-        <span class="hint">необязательно · через запятую</span>
-      </label>
-      <label>Описание книги
-        <textarea id="fDescription" rows="3" placeholder="Краткое описание, сюжет или заметки о книге..."></textarea>
-      </label>
-      <label>Ссылка на книгу
-        <input id="fLink" type="url" placeholder="https://..." />
-        <span class="hint">необязательно · если есть — кликабельная</span>
-      </label>
-      <label>Обложка (URL)
-        <div style="display:flex;gap:6px;align-items:center">
-          <input id="fCover" type="url" placeholder="https://.../cover.jpg" style="flex:1"/>
-          <button type="button" id="btnFindCover" class="btn btn-sm" style="white-space:nowrap" data-tooltip="Найти по автору и названию" aria-label="Найти обложку"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg> Найти</button>
-        </div>
-        <div id="fCoverPreview" style="display:none;gap:8px;align-items:center;margin-top:6px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:6px 8px"><img style="width:36px;height:48px;object-fit:cover;border-radius:4px;border:1px solid var(--border);display:none" alt=""/><span class="hint" style="flex:1"></span><button type="button" id="btnClearCover" class="btn btn-sm" style="padding:4px 8px">×</button></div>
-        <span class="hint">необязательно · автопоиск по ФИО и названию через Open Library / Google Books</span>
-      </label>
-      <label>Статус
-        <select id="fStatus">
-          <option value="planned">В планах</option>
-          <option value="reading">Читаю</option>
-          <option value="read">Прочитано</option>
-          <option value="dropped">Отложено</option>
-        </select>
-      </label>
-      <div class="row2">
-        <button type="submit" class="btn btn-primary" id="btnSubmit">Добавить</button>
-        <button type="button" class="btn" id="btnCloseAdd2">Отмена</button>
-      </div>
-    </form>
+  <!-- Всплывающее уведомление (Toast) -->
+  <div class="toast" :class="{ show: toast.show }">
+    {{ toast.text }}
   </div>
 </div>
 
-<!-- Модалка редактирования -->
-<div id="modal" class="modal-backdrop">
-  <div class="modal">
-    <h3>Редактировать книгу</h3>
-    <form id="editForm" class="form">
-      <label>ФИО автора <input id="eAuthor" required/></label>
-      <label>Название <input id="eTitle" required/></label>
-      <label>Главные герои <input id="eCharacters" placeholder="Напр. Пьер Безухов, Наташа Ростова"/></label>
-      <label>Описание книги <textarea id="eDescription" rows="3" placeholder="Краткое описание, сюжет или заметки о книге..."></textarea></label>
-      <label>Ссылка <input id="eLink" type="url" placeholder="https://..."/></label>
-      <label>Обложка (URL)
-        <div style="display:flex;gap:6px;align-items:center">
-          <input id="eCover" type="url" placeholder="https://.../cover.jpg" style="flex:1"/>
-          <button type="button" id="btnFindCoverEdit" class="btn btn-sm" style="white-space:nowrap" data-tooltip="Найти по автору и названию" aria-label="Найти обложку"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg> Найти</button>
-        </div>
-        <div id="eCoverPreview" style="display:none;gap:8px;align-items:center;margin-top:6px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:6px 8px"><img style="width:36px;height:48px;object-fit:cover;border-radius:4px;border:1px solid var(--border);display:none" alt=""/><span class="hint" style="flex:1"></span></div>
-      </label>
-      <label>Статус
-        <select id="eStatus">
-          <option value="planned">В планах</option>
-          <option value="reading">Читаю</option>
-          <option value="read">Прочитано</option>
-          <option value="dropped">Отложено</option>
-        </select>
-      </label>
-      <div class="row2">
-        <button type="submit" class="btn btn-primary">Сохранить</button>
-        <button type="button" class="btn" id="btnCloseModal">Отмена</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div id="toast" class="toast"></div>
+<!-- Загрузка Vue 3 (локальный файл для офлайн-режима + надежные CDN с фолбэком) -->
+<script src="./vue.global.prod.js"></script>
+<script>
+if (!window.Vue) {
+  document.write('<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"><\/script>');
+}
+</script>
+<script>
+if (!window.Vue) {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"><\/script>');
+}
+</script>
 
 <script>
 const LS_KEY = 'bookshelf_v2';
 const LS_VIEW = 'bookshelf_view';
-let books = load();
-let filter = 'all';
-let query = '';
-let sort = 'newest';
-let editingId = null;
-let viewMode = 'grid';
-try{ const v=localStorage.getItem(LS_VIEW); if(v) viewMode=v; }catch{}
-if(viewMode==='list') viewMode='grid';
-books.forEach(b=>{
-  if(!('cover' in b)) b.cover='';
-  if(!('description' in b)) b.description='';
-  if(!('characters' in b)) b.characters='';
-});
+const LS_THEME = 'bookshelf_theme';
+const LS_STALKER_BG = 'bookshelf_stalker_bg';
 
-const iconPlanned = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 14.5 14.5"/></svg>`;
-const iconReading = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h6"/><path d="M8 11h6"/></svg>`;
-const iconRead = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>`;
-const iconDropped = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
-const statusMeta = {
-  planned: {label:'В планах', cls:'badge-planned', icon: iconPlanned},
-  reading: {label:'Читаю', cls:'badge-reading', icon: iconReading},
-  read:    {label:'Прочитано', cls:'badge-read', icon: iconRead},
-  dropped: {label:'Отложено', cls:'badge-dropped', icon: iconDropped},
-};
-function statusSelectHTML(id, current){
-  const cur = statusMeta[current] || statusMeta.planned;
-  const options = Object.entries(statusMeta).map(([key, meta]) => `
-    <button class="status-option ${key===current?'is-active':''}" data-status-value="${key}" data-status-id="${id}" role="menuitem" type="button" data-tooltip="${meta.label}" aria-label="${meta.label}">${meta.icon}</button>
-  `).join('');
-  return `
-    <div class="status-select" data-status-select="${id}">
-      <button class="status-trigger" type="button" aria-haspopup="menu" aria-expanded="false" data-tooltip="${cur.label}" aria-label="Сменить статус: ${cur.label}">${cur.icon}</button>
-      <div class="status-menu" role="menu">${options}</div>
-    </div>
-  `;
-}
+const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
 
-function load(){
-  try{ return JSON.parse(localStorage.getItem(LS_KEY)) || [] }catch{return []}
-}
-function save(){ localStorage.setItem(LS_KEY, JSON.stringify(books)); }
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6) }
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-}
-async function fetchCover({title, author}){
-  if(!title) return null;
-  const tryGoogle = async (q) => {
-    try{
-      const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1`);
-      if(!r.ok) return null;
-      const d = await r.json();
-      const vol = d.items?.[0]?.volumeInfo;
-      const links = vol?.imageLinks;
-      if(links){
-        let u = links.thumbnail || links.smallThumbnail || links.medium || links.large;
-        if(u) return u.replace('http://','https://').replace('&zoom=1','&zoom=3').replace('&edge=curl','');
-      }
-    }catch{}
-    return null;
-  };
-  const tryOpenLibrary = async (t, a) => {
-    try{
-      const params = new URLSearchParams({title: t, limit: '5'});
-      if(a) params.set('author', a);
-      const r = await fetch(`https://openlibrary.org/search.json?${params.toString()}`);
-      if(!r.ok) return null;
-      const j = await r.json();
-      for(const doc of j.docs||[]){
-        if(doc.cover_i) return `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
-        if(doc.cover_edition_key) return `https://covers.openlibrary.org/b/olid/${doc.cover_edition_key}-L.jpg`;
-        if(doc.edition_key && doc.edition_key[0]) return `https://covers.openlibrary.org/b/olid/${doc.edition_key[0]}-L.jpg`;
-      }
-    }catch{}
-    return null;
-  };
-  // 1) точный поиск по ФИО + названию
-  const qFull = `intitle:${title}` + (author ? `+inauthor:${author}` : '');
-  let u = await tryGoogle(qFull);
-  if(u) return u;
-  u = await tryOpenLibrary(title, author);
-  if(u) return u;
-  // 2) fallback — только по названию
-  if(author){
-    u = await tryGoogle(`intitle:${title}`);
-    if(u) return u;
-    u = await tryOpenLibrary(title, '');
-    if(u) return u;
-  }
-  return null;
-}
-function setCoverPreview(inputId, previewId, url){
-  const inp = document.getElementById(inputId);
-  const wrap = document.getElementById(previewId);
-  if(!wrap) return;
-  const img = wrap.querySelector('img');
-  const hint = wrap.querySelector('span');
-  if(url){
-    if(inp) inp.value = url;
-    if(img){ img.src = url; img.style.display='block'; img.onerror=()=>{ img.style.display='none'; hint.textContent='Не удалось загрузить — проверьте URL'; }; }
-    if(hint) hint.textContent = 'Обложка найдена';
-    wrap.style.display='flex';
-  } else {
-    wrap.style.display='none';
-  }
-}
-async function handleFindCover({titleId, authorId, coverId, previewId, btn}){
-  const title = document.getElementById(titleId)?.value.trim() || '';
-  const author = document.getElementById(authorId)?.value.trim() || '';
-  if(!title){ toast('Укажите название книги'); return; }
-  const orig = btn ? btn.innerHTML : '';
-  if(btn){ btn.disabled=true; btn.innerHTML='Поиск…'; }
-  const url = await fetchCover({title, author});
-  if(btn){ btn.disabled=false; btn.innerHTML=orig; }
-  if(url){
-    setCoverPreview(coverId, previewId, url);
-    toast('Обложка найдена');
-  } else {
-    toast('Обложка не найдена');
-  }
-}
+createApp({
+  setup() {
+    // --- Состояние данных ---
+    const books = ref([]);
+    const filter = ref('all');
+    const query = ref('');
+    const sort = ref('newest');
+    const viewMode = ref('grid');
+    const theme = ref('light');
+    const stalkerBg = ref('menu');
+    const statsExpanded = ref(false);
+    const activeStatusMenu = ref(null);
 
-function renderStats(){
-  const total=books.length;
-  const read=books.filter(b=>b.status==='read').length;
-  const reading=books.filter(b=>b.status==='reading').length;
-  const planned=books.filter(b=>b.status==='planned').length;
-  const dropped=books.filter(b=>b.status==='dropped').length;
-  document.getElementById('statTotal').textContent=total;
-  document.getElementById('statRead').textContent=read;
-  document.getElementById('statReading').textContent=reading;
-  document.getElementById('statPlanned').textContent=planned;
-  const d=document.getElementById('statDropped');
-  if(d) d.textContent=dropped;
-}
+    // Модальное окно
+    const modalOpen = ref(false);
+    const modalMode = ref('add'); // 'add' | 'edit'
+    const editingId = ref(null);
+    const coverSearching = ref(false);
+    const authorInput = ref(null);
 
-function filtered(){
-  let arr=[...books];
-  if(filter!=='all') arr=arr.filter(b=>b.status===filter);
-  if(query){
-    const q=query.toLowerCase();
-    arr=arr.filter(b=> [b.author,b.title,b.characters,b.description,b.link].filter(Boolean).join(' ').toLowerCase().includes(q));
-  }
-  if(sort==='author') arr.sort((a,b)=>a.author.localeCompare(b.author,'ru'));
-  else if(sort==='title') arr.sort((a,b)=>a.title.localeCompare(b.title,'ru'));
-  else if(sort==='status') arr.sort((a,b)=>a.status.localeCompare(b.status));
-  else arr.sort((a,b)=>b.created - a.created);
-  return arr;
-}
+    const form = reactive({
+      id: null,
+      author: '',
+      title: '',
+      characters: '',
+      description: '',
+      link: '',
+      cover: '',
+      status: 'planned'
+    });
 
-function coverPlaceholder(author,title){
-  return `<div class="cover-placeholder"><svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><div class="ph-author">${escapeHtml(author)}</div><div class="ph-title">${escapeHtml(title)}</div></div>`;
-}
-function updateViewUI(){
-  document.querySelectorAll('#viewSwitch [data-view]').forEach(b=>{
-    const isActive = b.dataset.view===viewMode;
-    b.classList.toggle('active', isActive);
-    b.setAttribute('aria-selected', isActive);
-  });
-}
-function render(){
-  renderStats();
-  const data=filtered();
-  updateViewUI();
-  document.getElementById('countLabel').textContent = `${data.length} ${plural(data.length)} ${filter!=='all' ? '· фильтр: '+statusMeta[filter]?.label : ''}`;
-  const tbody=document.getElementById('tbody');
-  const cards=document.getElementById('cards');
-  const grid=document.getElementById('grid');
-  const tableWrap=document.getElementById('tableWrap');
-  const empty=document.getElementById('empty');
-  const heroIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;flex:0 0 13px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-  tbody.innerHTML='';
-  cards.innerHTML='';
-  if(grid) grid.innerHTML='';
-  if(data.length===0){
-    empty.style.display='block';
-    if(tableWrap) tableWrap.style.display = viewMode==='list' ? '' : 'none';
-    if(grid) grid.style.display='none';
-  } else {
-    empty.style.display='none';
-    if(viewMode==='grid'){
-      if(tableWrap) tableWrap.style.display='none';
-      if(grid){
-        grid.style.display='grid';
-        data.forEach(b=>{
-          const st=statusMeta[b.status]||statusMeta.planned;
-          const card=document.createElement('div');
-          card.className='book-grid-card';
-          const phInner = `<svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><div class="ph-author">${escapeHtml(b.author)}</div><div class="ph-title">${escapeHtml(b.title)}</div>`;
-          const coverInner = b.cover ? `<img src="${escapeHtml(b.cover)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="cover-placeholder" style="display:none">${phInner}</div>` : `<div class="cover-placeholder">${phInner}</div>`;
-          const finalCover = b.link ? `<a href="${escapeHtml(b.link)}" target="_blank" rel="noopener" class="cover" data-tooltip="Открыть книгу" aria-label="Открыть книгу">${coverInner}</a>` : `<div class="cover">${coverInner}</div>`;
-          card.innerHTML=`
-            ${finalCover}
-            <div class="grid-body">
-              <div class="grid-title">${escapeHtml(b.title)}</div>
-              <div class="grid-author">${escapeHtml(b.author)}</div>
-              ${b.characters ? `<div class="grid-characters" title="Главные герои: ${escapeHtml(b.characters)}">${heroIcon}<span>${escapeHtml(b.characters)}</span></div>` : ''}
-              ${b.description ? `<div class="grid-desc" title="${escapeHtml(b.description)}">${escapeHtml(b.description)}</div>` : ''}
-              <div class="grid-meta"><span class="badge ${st.cls}">${st.icon} ${st.label}</span></div>
-              <div class="grid-actions">
-                <button class="icon-btn" data-edit="${b.id}" aria-label="Редактировать" data-tooltip="Редактировать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:16px;height:16px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                <button class="icon-btn" data-del="${b.id}" aria-label="Удалить" data-tooltip="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:16px;height:16px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></button>
-                <span style="margin-left:auto"></span>
-                ${statusSelectHTML(b.id, b.status)}
-              </div>
-            </div>`;
-          grid.appendChild(card);
-        });
-      }
-    } else {
-      if(tableWrap) tableWrap.style.display='';
-      if(grid) grid.style.display='none';
-      data.forEach(b=>{
-        const st=statusMeta[b.status]||statusMeta.planned;
-        // table row
-        const tr=document.createElement('tr');
-        const linkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:14px;height:14px;flex:0 0 14px"><path d="M10 13a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1"/><path d="M14 11a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1"/></svg>`;
-        const linkCell = b.link ? `<a class="link" href="${escapeHtml(b.link)}" target="_blank" rel="noopener">${linkIcon} ${escapeHtml(host(b.link))}</a>` : '';
-        const descCell = b.description ? `<div class="desc-cell" title="${escapeHtml(b.description)}">${escapeHtml(b.description)}</div>` : '';
-        const charCell = b.characters ? `<div class="characters-cell" title="Главные герои: ${escapeHtml(b.characters)}">${heroIcon}<span><b>Герои:</b> ${escapeHtml(b.characters)}</span></div>` : '';
-        const detailsCell = (charCell || descCell || linkCell) ? `<div style="display:flex;flex-direction:column;gap:5px">${charCell}${descCell}${linkCell}</div>` : '<span class="hint">—</span>';
-        tr.innerHTML=`
-          <td><div class="author">${escapeHtml(b.author)}</div></td>
-          <td><div class="title">${escapeHtml(b.title)}</div></td>
-          <td>${detailsCell}</td>
-          <td><span class="badge ${st.cls}">${st.icon} ${st.label}</span></td>
-          <td>
-            <div class="actions">
-              <button class="icon-btn" title="Редактировать" data-edit="${b.id}" aria-label="Редактировать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:16px;height:16px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-              <button class="icon-btn" title="Удалить" data-del="${b.id}" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:16px;height:16px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></button>
-              ${statusSelectHTML(b.id, b.status)}
-            </div>
-          </td>`;
-        tbody.appendChild(tr);
+    // Уведомления
+    const toast = reactive({ show: false, text: '' });
+    let toastTimeout = null;
 
-        // card for mobile
-        const card=document.createElement('div');
-        card.className='book-card';
-        card.innerHTML=`
-          <div class="book-card-top">
-            <div>
-              <div class="author">${escapeHtml(b.author)}</div>
-              <div class="title">${escapeHtml(b.title)}</div>
-            </div>
-            <span class="badge ${st.cls}">${st.icon} ${st.label}</span>
-          </div>
-          ${b.characters ? `<div class="card-characters">${heroIcon}<span><b>Герои:</b> ${escapeHtml(b.characters)}</span></div>` : ''}
-          ${b.description ? `<div class="card-desc">${escapeHtml(b.description)}</div>` : ''}
-          ${b.link ? `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><a class="link" href="${escapeHtml(b.link)}" target="_blank" rel="noopener">${linkIcon} ${escapeHtml(host(b.link))}</a></div>` : ''}
-          <div class="actions">
-            <button class="btn btn-sm" data-edit="${b.id}">Редактировать</button>
-            <button class="btn btn-sm" data-del="${b.id}">Удалить</button>
-            ${statusSelectHTML(b.id, b.status)}
-          </div>`;
-        cards.appendChild(card);
-      });
+    // --- Звуки для темы S.T.A.L.K.E.R. ---
+    let audioCtx = null;
+    function playPdaBeep(freq = 900, duration = 0.04) {
+      if (theme.value !== 'stalker') return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
     }
-  }
-  // bind actions
-  document.querySelectorAll('[data-edit]').forEach(el=>el.addEventListener('click',()=>openEdit(el.getAttribute('data-edit'))));
-  document.querySelectorAll('[data-del]').forEach(el=>el.addEventListener('click',()=>removeBook(el.getAttribute('data-del'))));
-  // custom status select
-  document.querySelectorAll('[data-status-select]').forEach(wrap=>{
-    const trigger = wrap.querySelector('.status-trigger');
-    const menu = wrap.querySelector('.status-menu');
-    trigger.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      const isOpen = menu.classList.contains('open');
-      document.querySelectorAll('.status-menu.open').forEach(m=>{ m.classList.remove('open'); m.closest('[data-status-select]')?.querySelector('.status-trigger')?.setAttribute('aria-expanded','false'); });
-      if(!isOpen){ menu.classList.add('open'); trigger.setAttribute('aria-expanded','true'); }
+
+    function playMenuClick() {
+      if (theme.value !== 'stalker') return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.045);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.045);
+      } catch(e) {}
+    }
+
+    function playMenuHover() {
+      if (theme.value !== 'stalker') return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.02);
+        gain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.02);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.02);
+      } catch(e) {}
+    }
+
+    // --- Загрузка и инициализация ---
+    function loadStorage() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        books.value = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        books.value = [];
+      }
+      // Нормализация полей
+      books.value.forEach(b => {
+        if (!('characters' in b)) b.characters = '';
+        if (!('description' in b)) b.description = '';
+        if (!('cover' in b)) b.cover = '';
+      });
+
+      // Тема
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTheme = urlParams.get('theme');
+        if (['light', 'dark', 'stalker'].includes(urlTheme)) {
+          theme.value = urlTheme;
+        } else {
+          const savedTheme = localStorage.getItem(LS_THEME);
+          if (['light', 'dark', 'stalker'].includes(savedTheme)) {
+            theme.value = savedTheme;
+          } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme.value = 'dark';
+          }
+        }
+        if (urlParams.get('demo') === '1' && books.value.length === 0) {
+          loadDemo();
+        }
+      } catch (e) {}
+
+      // Обои Сталкера
+      try {
+        const savedBg = localStorage.getItem(LS_STALKER_BG);
+        if (['menu', 'tractor', 'barrel'].includes(savedBg)) {
+          stalkerBg.value = savedBg;
+        }
+      } catch (e) {}
+      document.documentElement.setAttribute('data-stalker-bg', stalkerBg.value);
+
+      // Режим вида
+      try {
+        const savedView = localStorage.getItem(LS_VIEW);
+        if (['grid', 'table'].includes(savedView)) viewMode.value = savedView;
+      } catch (e) {}
+
+      applyTheme(theme.value);
+    }
+
+    function saveStorage() {
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(books.value));
+      } catch (e) {}
+    }
+
+    // Автоматическое сохранение при изменении книг
+    watch(books, () => saveStorage(), { deep: true });
+
+    // --- Темы ---
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      try { localStorage.setItem(LS_THEME, t); } catch (e) {}
+    }
+    function setTheme(t) {
+      theme.value = t;
+      applyTheme(t);
+      playMenuClick();
+      showToast('Тема: ' + (t === 'stalker' ? 'S.T.A.L.K.E.R. Главное меню & КПК' : t === 'dark' ? 'Тёмная' : 'Светлая'));
+    }
+    function setStalkerBg(bg) {
+      stalkerBg.value = bg;
+      try { localStorage.setItem(LS_STALKER_BG, bg); } catch (e) {}
+      document.documentElement.setAttribute('data-stalker-bg', bg);
+      playMenuClick();
+    }
+    function setViewMode(v) {
+      viewMode.value = v;
+      try { localStorage.setItem(LS_VIEW, v); } catch (e) {}
+      playPdaBeep(850, 0.03);
+    }
+
+    // --- Вычисляемые свойства (Computed) ---
+    const stats = computed(() => {
+      const total = books.value.length;
+      const read = books.value.filter(b => b.status === 'read').length;
+      const reading = books.value.filter(b => b.status === 'reading').length;
+      const planned = books.value.filter(b => b.status === 'planned').length;
+      const dropped = books.value.filter(b => b.status === 'dropped').length;
+      return { total, read, reading, planned, dropped };
     });
-    wrap.querySelectorAll('[data-status-value]').forEach(opt=>{
-      opt.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const id = opt.getAttribute('data-status-id');
-        const val = opt.getAttribute('data-status-value');
-        menu.classList.remove('open'); trigger.setAttribute('aria-expanded','false');
-        updateStatus(id, val);
+
+    const counts = computed(() => ({
+      all: books.value.length,
+      planned: books.value.filter(b => b.status === 'planned').length,
+      reading: books.value.filter(b => b.status === 'reading').length,
+      read: books.value.filter(b => b.status === 'read').length,
+      dropped: books.value.filter(b => b.status === 'dropped').length,
+    }));
+
+    const statusLabels = computed(() => {
+      if (theme.value === 'stalker') {
+        return {
+          planned: '[ЦЕЛЬ: ВЗЯТО]',
+          reading: '[В ПРОЦЕССЕ]',
+          read: '[ВЫПОЛНЕНО]',
+          dropped: '[ОТМЕНЕНО]'
+        };
+      }
+      return {
+        planned: 'В планах',
+        reading: 'Читаю',
+        read: 'Прочитано',
+        dropped: 'Отложено'
+      };
+    });
+
+    const brandTitle = computed(() => theme.value === 'stalker' ? 'КПК v2.04' : 'VFYARL');
+    const brandSubtitle = computed(() => theme.value === 'stalker' ? 'Архив Зоны // Список литературы' : "VantuzFed's Reading List");
+
+    const filteredBooks = computed(() => {
+      let arr = [...books.value];
+      if (filter.value !== 'all') {
+        arr = arr.filter(b => b.status === filter.value);
+      }
+      if (query.value.trim()) {
+        const q = query.value.toLowerCase().trim();
+        arr = arr.filter(b =>
+          [b.author, b.title, b.characters, b.description, b.link]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(q)
+        );
+      }
+      if (sort.value === 'author') {
+        arr.sort((a, b) => a.author.localeCompare(b.author, 'ru'));
+      } else if (sort.value === 'title') {
+        arr.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+      } else if (sort.value === 'status') {
+        arr.sort((a, b) => a.status.localeCompare(b.status));
+      } else {
+        arr.sort((a, b) => (b.created || 0) - (a.created || 0));
+      }
+      return arr;
+    });
+
+    // --- Вспомогательные функции ---
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+
+    function host(url) {
+      try {
+        return new URL(url).hostname.replace('www.', '');
+      } catch (e) {
+        return (url || '').slice(0, 24);
+      }
+    }
+
+    function plural(n) {
+      if (n % 10 === 1 && n % 100 !== 11) return 'книга';
+      if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'книги';
+      return 'книг';
+    }
+
+    function showToast(msg) {
+      toast.text = msg;
+      toast.show = true;
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => { toast.show = false; }, 2300);
+    }
+
+    // --- Действия с книгами ---
+    function openAddModal() {
+      modalMode.value = 'add';
+      editingId.value = null;
+      form.id = null;
+      form.author = '';
+      form.title = '';
+      form.characters = '';
+      form.description = '';
+      form.link = '';
+      form.cover = '';
+      form.status = 'planned';
+      modalOpen.value = true;
+      playPdaBeep(1200, 0.04);
+      nextTick(() => { authorInput.value?.focus(); });
+    }
+
+    function openEditModal(book) {
+      modalMode.value = 'edit';
+      editingId.value = book.id;
+      form.id = book.id;
+      form.author = book.author || '';
+      form.title = book.title || '';
+      form.characters = book.characters || '';
+      form.description = book.description || '';
+      form.link = book.link || '';
+      form.cover = book.cover || '';
+      form.status = book.status || 'planned';
+      modalOpen.value = true;
+      playPdaBeep(1000, 0.04);
+      nextTick(() => { authorInput.value?.focus(); });
+    }
+
+    function closeModal() {
+      modalOpen.value = false;
+      editingId.value = null;
+    }
+
+    async function saveBook() {
+      if (!form.author || !form.title) {
+        showToast('Укажите автора и название книги');
+        return;
+      }
+
+      // Если обложка не задана, попробуем быстрый автопоиск
+      if (!form.cover && form.title) {
+        try {
+          coverSearching.value = true;
+          const found = await fetchCover(form.title, form.author);
+          if (found) form.cover = found;
+        } catch (e) {} finally {
+          coverSearching.value = false;
+        }
+      }
+
+      if (modalMode.value === 'add') {
+        const newBook = {
+          id: uid(),
+          author: form.author,
+          title: form.title,
+          characters: form.characters,
+          description: form.description,
+          link: form.link,
+          cover: form.cover,
+          status: form.status,
+          created: Date.now()
+        };
+        books.value.unshift(newBook);
+        showToast('Книга добавлена');
+      } else {
+        const target = books.value.find(b => b.id === editingId.value);
+        if (target) {
+          target.author = form.author;
+          target.title = form.title;
+          target.characters = form.characters;
+          target.description = form.description;
+          target.link = form.link;
+          target.cover = form.cover;
+          target.status = form.status;
+          target.updated = Date.now();
+        }
+        showToast('Изменения сохранены');
+      }
+
+      closeModal();
+      playPdaBeep(1400, 0.05);
+    }
+
+    function deleteBook(id) {
+      playPdaBeep(600, 0.06);
+      if (!confirm('Удалить эту книгу из списка?')) return;
+      books.value = books.value.filter(b => b.id !== id);
+      showToast('Книга удалена');
+    }
+
+    function toggleStatusMenu(id) {
+      activeStatusMenu.value = activeStatusMenu.value === id ? null : id;
+      playPdaBeep(900, 0.03);
+    }
+
+    function updateStatus(id, newStatus) {
+      const b = books.value.find(x => x.id === id);
+      if (b) {
+        b.status = newStatus;
+        showToast('Статус изменён');
+        playPdaBeep(1050, 0.04);
+      }
+      activeStatusMenu.value = null;
+    }
+
+    // --- Автопоиск обложки ---
+    async function fetchCover(title, author) {
+      if (!title) return null;
+      // Google Books
+      try {
+        const q = `intitle:${title}` + (author ? `+inauthor:${author}` : '');
+        const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1`);
+        if (r.ok) {
+          const d = await r.json();
+          const links = d.items?.[0]?.volumeInfo?.imageLinks;
+          if (links) {
+            let u = links.thumbnail || links.smallThumbnail || links.medium;
+            if (u) return u.replace('http://', 'https://').replace('&zoom=1', '&zoom=3').replace('&edge=curl', '');
+          }
+        }
+      } catch (e) {}
+
+      // Open Library
+      try {
+        const params = new URLSearchParams({ title, limit: '5' });
+        if (author) params.set('author', author);
+        const r = await fetch(`https://openlibrary.org/search.json?${params.toString()}`);
+        if (r.ok) {
+          const j = await r.json();
+          for (const doc of j.docs || []) {
+            if (doc.cover_i) return `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
+            if (doc.cover_edition_key) return `https://covers.openlibrary.org/b/olid/${doc.cover_edition_key}-L.jpg`;
+          }
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function findCover() {
+      if (!form.title) {
+        showToast('Сначала введите название книги');
+        return;
+      }
+      coverSearching.value = true;
+      playPdaBeep(800, 0.05);
+      const url = await fetchCover(form.title, form.author);
+      coverSearching.value = false;
+      if (url) {
+        form.cover = url;
+        showToast('Обложка найдена!');
+        playPdaBeep(1300, 0.06);
+      } else {
+        showToast('Обложка не найдена, проверьте название');
+      }
+    }
+
+    // --- Импорт и Экспорт ---
+    function downloadFile(filename, content, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportJson() {
+      if (!books.value.length) return showToast('Список книг пуст');
+      const json = JSON.stringify(books.value, null, 2);
+      downloadFile(`books-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json');
+      showToast('JSON экспортирован');
+      playPdaBeep(1200, 0.04);
+    }
+
+    function exportCsv() {
+      if (!books.value.length) return showToast('Список книг пуст');
+      const headers = ['author', 'title', 'characters', 'description', 'link', 'cover', 'status'];
+      const rows = books.value.map(b =>
+        headers.map(h => `"${String(b[h] || '').replace(/"/g, '""')}"`).join(',')
+      );
+      const csv = [headers.join(','), ...rows].join('\n');
+      downloadFile(`books-${new Date().toISOString().slice(0, 10)}.csv`, csv, 'text/csv;charset=utf-8');
+      showToast('CSV экспортирован');
+      playPdaBeep(1200, 0.04);
+    }
+
+    async function copyJson() {
+      if (!books.value.length) return showToast('Список книг пуст');
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(books.value, null, 2));
+        showToast('JSON скопирован в буфер обмена');
+        playPdaBeep(1100, 0.04);
+      } catch (e) {
+        showToast('Не удалось скопировать');
+      }
+    }
+
+    function parseCsvLine(line) {
+      const out = [];
+      let cur = '';
+      let inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (c === ',' && !inQ) {
+          out.push(cur);
+          cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      out.push(cur);
+      return out.map(s => s.trim());
+    }
+
+    async function handleFileImport(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        let imported = [];
+        if (file.name.endsWith('.json')) {
+          const parsed = JSON.parse(text);
+          imported = Array.isArray(parsed) ? parsed : [parsed];
+        } else if (file.name.endsWith('.csv')) {
+          const lines = text.split(/\r?\n/).filter(Boolean);
+          const headers = lines[0].split(',').map(s => s.replace(/"/g, '').trim().toLowerCase());
+          const idx = name => headers.indexOf(name);
+          for (let i = 1; i < lines.length; i++) {
+            const cols = parseCsvLine(lines[i]);
+            imported.push({
+              author: cols[idx('author')] || '',
+              title: cols[idx('title')] || '',
+              characters: cols[idx('characters')] || cols[idx('heroes')] || cols[idx('герои')] || '',
+              description: cols[idx('description')] || cols[idx('desc')] || '',
+              link: cols[idx('link')] || '',
+              cover: cols[idx('cover')] || '',
+              status: cols[idx('status')] || 'planned'
+            });
+          }
+        } else {
+          return showToast('Поддерживаются файлы .json и .csv');
+        }
+
+        let added = 0;
+        imported.forEach(r => {
+          if (!r.author || !r.title) return;
+          const exists = books.value.some(b =>
+            (r.link && b.link === r.link) ||
+            (b.author.toLowerCase() === r.author.toLowerCase() && b.title.toLowerCase() === r.title.toLowerCase())
+          );
+          if (exists) return;
+          books.value.push({
+            id: uid(),
+            author: String(r.author).trim(),
+            title: String(r.title).trim(),
+            characters: String(r.characters || '').trim(),
+            description: String(r.description || '').trim(),
+            link: String(r.link || '').trim(),
+            cover: String(r.cover || '').trim(),
+            status: ['planned', 'reading', 'read', 'dropped'].includes(r.status) ? r.status : 'planned',
+            created: Date.now()
+          });
+          added++;
+        });
+
+        showToast(`Импортировано: ${added} книг (пропущено дубликатов: ${imported.length - added})`);
+        playPdaBeep(1300, 0.05);
+      } catch (err) {
+        showToast('Ошибка импорта: ' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    // --- Демо-данные ---
+    function loadDemo() {
+      const demo = [
+        {
+          author: 'Фёдор Достоевский',
+          title: 'Преступление и наказание',
+          characters: 'Родион Раскольников, Соня Мармеладова, Порфирий Петрович',
+          cover: 'https://covers.openlibrary.org/b/isbn/9785389057871-L.jpg',
+          link: 'https://knigopoisk.com/dostoevsky_prestuplenie',
+          description: 'Классический роман о морали, вине и искуплении студента Родиона Раскольникова.',
+          status: 'read'
+        },
+        {
+          author: 'Джордж Оруэлл',
+          title: '1984',
+          characters: 'Уинстон Смит, Джулия, О’Брайен',
+          cover: 'https://covers.openlibrary.org/b/isbn/9785170801152-L.jpg',
+          link: 'https://www.litres.ru/dzhordzh-oruell/1984-121402/',
+          description: 'Культовая антиутопия о тоталитарном государстве, всевидящем Большом Брате и двоемыслии.',
+          status: 'reading'
+        },
+        {
+          author: 'Антуан де Сент-Экзюпери',
+          title: 'Маленький принц',
+          characters: 'Маленький принц, Лётчик, Лис, Роза',
+          cover: '',
+          link: '',
+          description: 'Философская сказка-притча о дружбе, любви, верности и ответственности за тех, кого приручили.',
+          status: 'planned'
+        },
+        {
+          author: 'Харуки Мураками',
+          title: 'Норвежский лес',
+          characters: 'Тору Ватанабэ, Наоко, Мидори Кобаяси',
+          cover: 'https://covers.openlibrary.org/b/isbn/9785699404097-L.jpg',
+          link: 'https://example.com/murakami',
+          description: 'Глубокий ностальгический роман о студенческих годах в Токио 60-х, потерях и взрослении.',
+          status: 'dropped'
+        }
+      ];
+
+      let added = 0;
+      demo.forEach(d => {
+        if (books.value.some(b => b.title === d.title && b.author === d.author)) return;
+        books.value.unshift({ id: uid(), ...d, created: Date.now() - added * 1000 });
+        added++;
+      });
+      showToast(added ? `Добавлено ${added} демо-книг` : 'Все демо-книги уже есть в списке');
+      playPdaBeep(1400, 0.05);
+    }
+
+    function clearAll() {
+      if (!books.value.length) return showToast('Список уже пуст');
+      if (confirm(`Удалить все ${books.value.length} книг? Действие необратимо.`)) {
+        books.value = [];
+        showToast('Список очищен');
+        playPdaBeep(500, 0.08);
+      }
+    }
+
+    // --- Обработчики глобальных событий ---
+    onMounted(() => {
+      loadStorage();
+
+      // Закрытие меню статуса при клике вне
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.status-select-wrap')) {
+          activeStatusMenu.value = null;
+        }
+      });
+
+      // Горячие клавиши
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeModal();
+          activeStatusMenu.value = null;
+        }
       });
     });
-  });
-}
 
-function host(url){
-  try{ return new URL(url).hostname.replace('www.','') }catch{return url.slice(0,24)}
-}
-function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-function plural(n){
-  if(n%10===1 && n%100!==11) return 'книга';
-  if([2,3,4].includes(n%10) && ![12,13,14].includes(n%100)) return 'книги';
-  return 'книг';
-}
-
-// Form add
-document.getElementById('bookForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const author=document.getElementById('fAuthor').value.trim();
-  const title=document.getElementById('fTitle').value.trim();
-  const characters=document.getElementById('fCharacters').value.trim();
-  const description=document.getElementById('fDescription').value.trim();
-  const link=document.getElementById('fLink').value.trim();
-  let cover=document.getElementById('fCover').value.trim();
-  const status=document.getElementById('fStatus').value;
-  if(!author || !title) return toast('Заполните автора и название');
-  if(!cover && title){
-    // автопоиск обложки по ФИО + названию
-    const btn=document.getElementById('btnFindCover');
-    if(btn) btn.innerHTML='Поиск…';
-    const found = await fetchCover({title, author});
-    if(found) cover = found;
-    if(btn) btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg> Найти';
+    return {
+      books,
+      filter,
+      query,
+      sort,
+      viewMode,
+      theme,
+      stalkerBg,
+      setStalkerBg,
+      statsExpanded,
+      activeStatusMenu,
+      modalOpen,
+      modalMode,
+      form,
+      coverSearching,
+      authorInput,
+      toast,
+      stats,
+      counts,
+      statusLabels,
+      brandTitle,
+      brandSubtitle,
+      filteredBooks,
+      setTheme,
+      setViewMode,
+      openAddModal,
+      openEditModal,
+      closeModal,
+      saveBook,
+      deleteBook,
+      toggleStatusMenu,
+      updateStatus,
+      findCover,
+      exportJson,
+      exportCsv,
+      copyJson,
+      handleFileImport,
+      loadDemo,
+      clearAll,
+      host,
+      plural
+    };
   }
-  const book={id:uid(), author, title, characters, description, link, cover, status, created:Date.now()};
-  books.unshift(book);
-  save(); render();
-  e.target.reset();
-  document.getElementById('fCoverPreview').style.display='none';
-  document.getElementById('fStatus').value='planned';
-  document.getElementById('addModal').classList.remove('open');
-  toast('Книга добавлена');
-});
-function openAddModal(){
-  document.getElementById('bookForm').reset();
-  document.getElementById('fCoverPreview').style.display='none';
-  document.getElementById('fStatus').value='planned';
-  document.getElementById('addModal').classList.add('open');
-  setTimeout(()=>document.getElementById('fAuthor')?.focus(), 50);
-}
-function closeAddModal(){ document.getElementById('addModal').classList.remove('open'); }
-document.getElementById('fabAdd')?.addEventListener('click', openAddModal);
-document.getElementById('btnCloseAdd')?.addEventListener('click', closeAddModal);
-document.getElementById('btnCloseAdd2')?.addEventListener('click', closeAddModal);
-document.getElementById('addModal')?.addEventListener('click', e=>{ if(e.target.id==='addModal') closeAddModal(); });
-// авто-превью и поиск обложки
-document.getElementById('fCover')?.addEventListener('input', e=>{
-  const v=e.target.value.trim();
-  const wrap=document.getElementById('fCoverPreview');
-  if(!wrap) return;
-  if(v){ setCoverPreview('fCover','fCoverPreview', v); } else { wrap.style.display='none'; }
-});
-document.getElementById('eCover')?.addEventListener('input', e=>{
-  const v=e.target.value.trim();
-  const wrap=document.getElementById('eCoverPreview');
-  if(!wrap) return;
-  if(v){ setCoverPreview('eCover','eCoverPreview', v); } else { wrap.style.display='none'; }
-});
-document.getElementById('btnFindCover')?.addEventListener('click', ()=> handleFindCover({titleId:'fTitle', authorId:'fAuthor', coverId:'fCover', previewId:'fCoverPreview', btn: document.getElementById('btnFindCover')}));
-document.getElementById('btnFindCoverEdit')?.addEventListener('click', ()=> handleFindCover({titleId:'eTitle', authorId:'eAuthor', coverId:'eCover', previewId:'eCoverPreview', btn: document.getElementById('btnFindCoverEdit')}));
-document.getElementById('btnClearCover')?.addEventListener('click', ()=>{
-  document.getElementById('fCover').value='';
-  document.getElementById('fCoverPreview').style.display='none';
-});
-async function autoCoverOnBlur(coverId, titleId, authorId, previewId){
-  const coverInp=document.getElementById(coverId);
-  if(!coverInp || coverInp.value.trim()) return;
-  const title=document.getElementById(titleId)?.value.trim()||'';
-  if(!title) return;
-  const author=document.getElementById(authorId)?.value.trim()||'';
-  const url=await fetchCover({title, author});
-  if(url && !coverInp.value.trim()) setCoverPreview(coverId, previewId, url);
-}
-document.getElementById('fTitle')?.addEventListener('blur', ()=> autoCoverOnBlur('fCover','fTitle','fAuthor','fCoverPreview'));
-document.getElementById('fAuthor')?.addEventListener('blur', ()=> autoCoverOnBlur('fCover','fTitle','fAuthor','fCoverPreview'));
-document.getElementById('eTitle')?.addEventListener('blur', ()=> autoCoverOnBlur('eCover','eTitle','eAuthor','eCoverPreview'));
-document.getElementById('eAuthor')?.addEventListener('blur', ()=> autoCoverOnBlur('eCover','eTitle','eAuthor','eCoverPreview'));
-document.getElementById('btnReset')?.addEventListener('click',()=>document.getElementById('bookForm').reset());
-document.getElementById('btnClearAll').addEventListener('click',()=>{
-  if(!books.length) return toast('Список уже пуст');
-  if(confirm(`Удалить все ${books.length} ${plural(books.length)}? Действие нельзя отменить.`)){
-    books=[]; save(); render(); toast('Список очищен');
-  }
-});
-document.getElementById('btnCopyJson').addEventListener('click', async()=>{
-  if(!books.length) return toast('Нечего копировать');
-  await navigator.clipboard.writeText(JSON.stringify(books,null,2));
-  toast('JSON скопирован в буфер');
-});
-
-// Search / filters / sort
-document.getElementById('q').addEventListener('input', e=>{ query=e.target.value; render(); });
-document.getElementById('sort').addEventListener('change', e=>{ sort=e.target.value; render(); });
-document.getElementById('filters').addEventListener('click', e=>{
-  const b=e.target.closest('button[data-f]');
-  if(!b) return;
-  filter=b.dataset.f;
-  document.querySelectorAll('#filters button').forEach(x=>x.classList.toggle('active', x===b));
-  render();
-});
-document.getElementById('viewSwitch')?.addEventListener('click', e=>{
-  const b=e.target.closest('[data-view]');
-  if(!b) return;
-  viewMode=b.dataset.view;
-  localStorage.setItem(LS_VIEW, viewMode);
-  render();
-});
-document.getElementById('toggleStats')?.addEventListener('click', ()=>{
-  const details=document.getElementById('statsDetails');
-  const isHidden = details.style.display==='none' || getComputedStyle(details).display==='none';
-  details.style.display = isHidden ? 'inline-flex' : 'none';
-  const btn=document.getElementById('toggleStats');
-  btn.textContent = isHidden ? 'Скрыть' : 'Показать всю статистику';
-  btn.setAttribute('aria-expanded', String(isHidden));
-});
-document.addEventListener('click', ()=>{ document.querySelectorAll('.status-menu.open').forEach(m=>{ m.classList.remove('open'); const t=m.closest('[data-status-select]')?.querySelector('.status-trigger'); if(t) t.setAttribute('aria-expanded','false'); }); });
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){
-    document.querySelectorAll('.status-menu.open').forEach(m=>m.classList.remove('open'));
-    document.getElementById('addModal')?.classList.remove('open');
-    document.getElementById('modal')?.classList.remove('open');
-  }
-});
-
-function removeBook(id){
-  if(!confirm('Удалить книгу?')) return;
-  books=books.filter(b=>b.id!==id);
-  save(); render(); toast('Удалено');
-}
-function updateStatus(id, status){
-  const b=books.find(x=>x.id===id);
-  if(b){ b.status=status; save(); render(); toast('Статус обновлён'); }
-}
-function openEdit(id){
-  const b=books.find(x=>x.id===id);
-  if(!b) return;
-  editingId=id;
-  document.getElementById('eAuthor').value=b.author;
-  document.getElementById('eTitle').value=b.title;
-  document.getElementById('eCharacters').value=b.characters||'';
-  document.getElementById('eDescription').value=b.description||'';
-  document.getElementById('eLink').value=b.link||'';
-  document.getElementById('eCover').value=b.cover||'';
-  document.getElementById('eStatus').value=b.status;
-  const ep=document.getElementById('eCoverPreview');
-  if(b.cover && ep){ setCoverPreview('eCover','eCoverPreview', b.cover); } else if(ep){ ep.style.display='none'; }
-  document.getElementById('modal').classList.add('open');
-}
-document.getElementById('btnCloseModal').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));
-document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open')});
-document.getElementById('editForm').addEventListener('submit', e=>{
-  e.preventDefault();
-  const b=books.find(x=>x.id===editingId);
-  if(!b) return;
-  b.author=document.getElementById('eAuthor').value.trim();
-  b.title=document.getElementById('eTitle').value.trim();
-  b.characters=document.getElementById('eCharacters').value.trim();
-  b.description=document.getElementById('eDescription').value.trim();
-  b.link=document.getElementById('eLink').value.trim();
-  b.cover=document.getElementById('eCover').value.trim();
-  b.status=document.getElementById('eStatus').value;
-  save(); render();
-  document.getElementById('modal').classList.remove('open');
-  toast('Сохранено');
-});
-
-// Export / Import
-function download(filename, content, mime){
-  const blob=new Blob([content],{type:mime});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=filename; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-document.getElementById('btnExportJson').addEventListener('click',()=>{
-  if(!books.length) return toast('Список пуст');
-  download(`books-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(books,null,2), 'application/json');
-  toast('JSON экспортирован');
-});
-document.getElementById('btnExportCsv').addEventListener('click',()=>{
-  if(!books.length) return toast('Список пуст');
-  const header=['author','title','characters','description','link','cover','status'];
-  const rows=books.map(b=> header.map(h=> `"${String(b[h]||'').replace(/"/g,'""')}"`).join(','));
-  const csv=[header.join(','), ...rows].join('\n');
-  download(`books-${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv;charset=utf-8');
-  toast('CSV экспортирован');
-});
-document.getElementById('importFile').addEventListener('change', async e=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  const text=await file.text();
-  try{
-    let imported=[];
-    if(file.name.endsWith('.json')){
-      const data=JSON.parse(text);
-      imported=Array.isArray(data)?data:[data];
-    } else if(file.name.endsWith('.csv')){
-      const lines=text.split(/\r?\n/).filter(Boolean);
-      const header=lines[0].split(',').map(s=>s.replace(/"/g,'').trim().toLowerCase());
-      const idx=(name)=>header.indexOf(name);
-      for(let i=1;i<lines.length;i++){
-        // naive CSV parse with quoted commas
-        const cols=parseCsvLine(lines[i]);
-        imported.push({
-          author: cols[idx('author')]||'',
-          title: cols[idx('title')]||'',
-          characters: cols[idx('characters')]||cols[idx('heroes')]||cols[idx('герои')]||'',
-          description: cols[idx('description')]||cols[idx('desc')]||'',
-          link: cols[idx('link')]||'',
-          cover: cols[idx('cover')]||'',
-          status: cols[idx('status')]||'planned',
-        });
-      }
-    } else {
-      return toast('Поддерживаются .json и .csv');
-    }
-    // normalize & dedup
-    let added=0;
-    imported.forEach(r=>{
-      if(!r.author || !r.title) return;
-      const exists=books.some(b=> (r.link && b.link===r.link) || (b.author.toLowerCase()===r.author.toLowerCase() && b.title.toLowerCase()===r.title.toLowerCase()));
-      if(exists) return;
-      books.push({id:uid(), author:String(r.author).trim(), title:String(r.title).trim(), characters:String(r.characters||'').trim(), description:String(r.description||'').trim(), link:String(r.link||'').trim(), cover:String(r.cover||'').trim(), status:['planned','reading','read','dropped'].includes(r.status)?r.status:'planned', created:Date.now()});
-      added++;
-    });
-    save(); render();
-    toast(`Импортировано: ${added} · пропущено дублей: ${imported.length-added}`);
-  }catch(err){
-    toast('Ошибка импорта: '+err.message);
-  }
-  e.target.value='';
-});
-function parseCsvLine(line){
-  const out=[]; let cur=''; let inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
-    if(c==='"'){
-      if(inQ && line[i+1]==='"'){cur+='"';i++}
-      else inQ=!inQ;
-    } else if(c===',' && !inQ){ out.push(cur); cur='';}
-    else cur+=c;
-  }
-  out.push(cur);
-  return out.map(s=>s.trim());
-}
-
-// Demo
-document.getElementById('btnAddDemo').addEventListener('click',()=>{
-  const demo=[
-    {author:'Фёдор Достоевский', title:'Преступление и наказание', characters:'Родион Раскольников, Соня Мармеладова, Порфирий Петрович', cover:'https://covers.openlibrary.org/b/isbn/9785389057871-L.jpg', link:'https://knigopoisk.com/dostoevsky_prestuplenie', description:'Классический роман о морали, вине и искуплении студента Родиона Раскольникова.', status:'read'},
-    {author:'Джордж Оруэлл', title:'1984', characters:'Уинстон Смит, Джулия, О’Брайен', cover:'https://covers.openlibrary.org/b/isbn/9785170801152-L.jpg', link:'https://www.litres.ru/dzhordzh-oruell/1984-121402/', description:'Культовая антиутопия о тоталитарном государстве, всевидящем Большом Брате и двоемыслии.', status:'reading'},
-    {author:'Антуан де Сент-Экзюпери', title:'Маленький принц', characters:'Маленький принц, Лётчик, Лис, Роза', cover:'', link:'', description:'Философская сказка-притча о дружбе, любви, верности и ответственности за тех, кого приручили.', status:'planned'},
-    {author:'Харуки Мураками', title:'Норвежский лес', characters:'Тору Ватанабэ, Наоко, Мидори Кобаяси', cover:'https://covers.openlibrary.org/b/isbn/9785699404097-L.jpg', link:'https://example.com/murakami', description:'Глубокий ностальгический роман о студенческих годах в Токио 60-х, потерях и взрослении.', status:'dropped'},
-  ];
-  let added=0;
-  demo.forEach(d=>{
-    if(books.some(b=>b.title===d.title && b.author===d.author)) return;
-    books.unshift({id:uid(), ...d, created:Date.now()-added*1000});
-    added++;
-  });
-  save(); render();
-  toast(added?`Добавлено ${added} демо-книги`:'Демо-книги уже в списке');
-});
-
-// init
-render();
+}).mount('#app');
 </script>
 </body>
 </html>
